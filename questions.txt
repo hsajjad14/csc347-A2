@@ -15,3 +15,7 @@ notes from oh:
 
     insecure direct obj ref, bad exp and account id generation, sql injectible,
     csrf cause we can pass in things into expr id and account id
+
+
+
+    bcrypt()

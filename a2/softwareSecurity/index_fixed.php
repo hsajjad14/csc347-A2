@@ -15,7 +15,7 @@ session_start();
 # Before processing a request, first verify the page token.
 ###################################################################################################
 
-$url .= (parse_url($url, PHP_URL_QUERY) ? '&' : '?') . 'category=action';
+
 
 $check_token = True;
 // check if post token is set, and token in cookie is set, if so, check if they are equal
@@ -60,14 +60,19 @@ function sanitize_input($string, $isUserNameOrPassword)
     if ($isUserNameOrPassword)
     {
         $get_substring = substr($string, 0, 25);
+        $pattern = "/<|>|{|}|&|^|`|~|\/|\\\|\s/";
+        $replacement = "";
+        $cleaned_string = preg_replace($pattern, $replacement, $get_substring);
+        return $cleaned_string;
     }
     else
     {
         $get_substring = substr($string, 0, 100);
+        $pattern = "/^[\^+*4\-()\/]+$/";
+        return preg_match($pattern, $get_substring);
+
     }
-    $html_special_chars_correction = htmlspecialchars($get_substring, ENT_QUOTES, 'UTF-8');
-    $retrn_value = htmlspecialchars($html_special_chars_correction, ENT_QUOTES, 'UTF-8');
-    return $retrn_value;
+
 }
 if ($operation == "login")
 {
@@ -147,30 +152,41 @@ elseif ($operation == "addExpression")
     # Do the same for all untrusted input and output!
     # http://stackoverflow.com/questions/46483/htmlentities-vs-htmlspecialchars
     ###################################################################################################
-    $expression = sanitize_input($_POST['expression'], False);
-    $value = $_POST['value'];
-    $accountId = $_POST['accountId'];
+    $expression="";
+    $valid_expression=True;
+    if (sanitize_input($_POST['expression'], False)) {
+      $expression = $_POST['expression'];
+    } else {
+      $g_errors = "not a valid expression";
+      $valid_expression=False;
+    }
 
-    $dbconn = pg_connect_db();
-    $stmtname = "find_expression";
-    $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE expression=$1");
-    $result = pg_execute($dbconn, $stmtname, array(
-        $expression
-    ));
-    if (!($row = pg_fetch_row($result)))
-    {
-        $stmtname = "add_expression";
-        $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");
-        $result = pg_execute($dbconn, $stmtname, array(
-            $value,
-            $expression,
-            $accountId
-        ));
+    if ($valid_expression) {
+      $value = $_POST['value'];
+      $accountId = $_POST['accountId'];
+
+      $dbconn = pg_connect_db();
+      $stmtname = "find_expression";
+      $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE expression=$1");
+      $result = pg_execute($dbconn, $stmtname, array(
+          $expression
+      ));
+      if (!($row = pg_fetch_row($result)))
+      {
+          $stmtname = "add_expression";
+          $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");
+          $result = pg_execute($dbconn, $stmtname, array(
+              $value,
+              $expression,
+              $accountId
+          ));
+      }
+      else
+      {
+          $g_errors = "$expression is already in our database";
+      }
     }
-    else
-    {
-        $g_errors = "$expression is already in our database";
-    }
+
 }
 elseif ($operation == "logout")
 {
