@@ -1,0 +1,4 @@
+isLoggedIn|b:1;accountId|s:1:"4";user|s:5:"coins";firstName|s:7:"Abagail";lastName|s:6:"Silver";
+
+
+isLoggedIn|b:0;

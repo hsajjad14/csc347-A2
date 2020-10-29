@@ -1,0 +1,60 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A2: SESSION FIXATION </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				Application functions related to authentication and session management are often not<br>
+				implemented correctly, allowing attackers to compromise passwords, keys, or session tokens, or<br>
+				to exploit other implementation flaws to assume other users’ identities.<br>
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br><br>
+				Using the same session after logging in logging out etc.
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:<br><br>
+				If the attacker somehow get's your session, and you use that same session to login<br>
+				and the session contains sensitive information (login, password) the attacker <br>
+				now has access to your login and password and can use these.
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													Implement new session creation on login and logout and delete <br>
+													the previous session.<br>
+													When logging in or logging out use: <br><br>
+													session_regenerate_id(True);
+
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:<br><br>
+													If the attacker somehow get's a hold of your session, and you <br>
+													login they can't do anything with that old session as it has been <br>
+													deleted from the server and you are using a brand new session, which <br>
+													holds your data.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

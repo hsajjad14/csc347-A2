@@ -1,0 +1,90 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A1: SQL Injection, use prepared statements </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+				<br>
+				<br>
+				Attackers can send manipulate text fields and send part's of sql querries <br>
+				that can provide them with private user information.Also they can alter or delete the <br>
+				database using injected sql querries.<br>
+				They can also use sqlMap to get all the information in the database. <br>
+				This violates Confidentiality, Integrity, Availability, and authentication.
+
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br>
+				<br>
+				Some example code is: <br>
+				$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+				$result = pg_prepare($dbconn, "", $query);<br>
+				$result = pg_execute($dbconn, "", array());<br><br>
+				Another example is when adding an expression: <br>
+				$dbconn = pg_connect_db();<br>
+				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
+				$result = pg_execute($dbconn, "", array()); <br>
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br>
+				<br>
+				The attacker can exploit this using some sql injections
+				<a href=sql_injections_example.txt>sql_injections_example.txt</a>
+				<br>
+				<br>
+				They can also use sqlMap like in <a href=A1_sqlmap.txt>A1_sqlmap.txt</a>
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br>
+				<br>
+				The attacker can use sqlMap to get everything from the database. Violating
+				Confidentiality. <br>
+				They can also use 'update' querries to change the data in the database Violating
+				Integrity. And can delete the entire database, bringing the entire system down
+				Violating Availability.
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+													<br>
+													<br>
+													Use prepared statements so when querries are sent to the database<br>
+													it knows what is paramaters and what is executable querries.<br><br>
+													So for this querry that is sent when a user logs in: <br>
+													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+													$result = pg_prepare($dbconn, "", $query);<br>
+													$result = pg_execute($dbconn, "", array());<br><br>
+													It would instead be like: <br>
+													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd=$2";<br>
+													$stmtname="find_user";<br>
+													$result = pg_prepare($dbconn, $stmtname, $query);<br>
+													$result = pg_execute($dbconn, $stmtname, array($user, $password));
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:<br><br>
+													The parameters passed in at pg_execute() let's <br>
+													 psql know that these are parameters and not meant to be executed.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

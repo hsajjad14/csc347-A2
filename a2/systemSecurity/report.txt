@@ -1,0 +1,49 @@
+1) [2 Marks]
+	Command to init the database: 
+	Command to run a check:
+	Command to get a report: 
+	Place the report in twreport1.txt
+
+2a) [5 Marks] Document the steps you took to 'take the drive out of the Ubuntu804_owasp VM and place it in the Kali VM'. 
+	1) First shutdown the Ubuntu804_owasp vm.
+	2) 
+	3) 
+	...
+
+2b) [3 Marks] Copy the shadow file to the Kali VM and see if you 
+    can determine some of the passwords using John the ripper. 
+
+	PLACE john the ripper results below. 
+
+2c) [2 Marks] Modify user sid so that they are now a root user with password 'password'. 
+
+	EXPLAIN HOW YOU DO THIS AND PLACE MODIFIED FILES ETC IN THIS DIRECTORY
+
+2d) NOTHING TO REPORT HERE
+
+3a) [2 Marks] Place the result of running tripwire in twreport2.txt. 
+	Identify anything interesting below.
+
+3b) [4 Marks] 
+	last # this is a command
+
+		WHAT DID YOU LEARN
+
+	uptime # this is a command
+
+		WHAT DID YOU LEARN
+
+	/var/log/* # these are log files
+
+		WHAT DID YOU LEARN
+
+	.bash_history # what is this, whos should you look at and why are you looking?
+
+		WHAT DID YOU LEARN
+
+
+4) [2 Marks] List updates to policy below. 
+
+5) [2 Marks] Report on what the attacker could have done to leave fewer traces than they did in this attack. 
+	What would you do to detect a compromise even in this case? 
+

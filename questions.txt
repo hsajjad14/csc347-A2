@@ -1,0 +1,17 @@
+questions:
+
+  1. why isn't my prepared statement not preventing sql injection?
+  2. what is the behaviour supposed to be when submitting error's for expressions
+
+
+notes from oh:
+  - for csrf add token to url, also make a new token on every request
+  - for sqlmap reset the log
+  - for csrf use prepared statements to fix instead of the htmlspecialchars
+  - for delete expr:
+      $dbconn = pg_connect_db();
+      $result = pg_prepare($dbconn, "", "DELETE FROM solution WHERE id=$expressionId AND accountId=$accountId");
+      $result = pg_execute($dbconn, "", array());
+
+    insecure direct obj ref, bad exp and account id generation, sql injectible,
+    csrf cause we can pass in things into expr id and account id

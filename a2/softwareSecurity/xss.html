@@ -1,0 +1,77 @@
+<html>
+	<body>
+		<h1> # FIX: XSS: user input/output is not vetted </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				Cross-Site Scripting or XSS allows attackers to send data to the system. <br>
+				Data like scripts that exploit the interpreter in the browser. Almost any source of data
+				<br>can be an attack vector, including internal sources such as data from the database.
+<xmp>
+</xmp>
+                        </li>
+			<li> Example code etc.:
+<xmp>
+</xmp>
+                        </li>
+			<li> How attacker exploits this:<br><br>
+			 They can send this script when adding a expression: <br>
+			"< /xmp >< table bgcolor=green width=100 height=100>< tr >< td >Hi!!</ td ></ tr ></ table >< xmp >"
+				<br><br>
+				The script above although just makes a green box, when sent as an expression, it gets <br>
+				logged in the database and renders the application useless. No one else can enter or <br>
+				delete any more expressions.
+<xmp>
+</xmp>
+                        </li>
+			<li> Impact: CIAaa and some details
+<xmp>
+</xmp>
+                        </li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													Sanitize the input and output.<br>
+													Whenever someone sends us data, first limit the input/output sizes, so attackers
+													can't manipulate the look of the site using large inputs <br>
+													Next, for all special html characters replace them with<br>
+													a code so they can't be confused by the compiler. <br><br>
+													<code>
+														function sanitize_input($string, $isUserNameOrPassword)<br>
+														{<br>
+														    // maximum input length of 25 characters for username/password and 100 for expressions<br>
+														    if ($isUserNameOrPassword)<br>
+														    {<br>
+														        $get_substring = substr($string, 0, 25);<br>
+														    }<br>
+														    else<br>
+														    {<br>
+														        $get_substring = substr($string, 0, 100);<br>
+														    }<br>
+														    $html_special_chars_correction = htmlspecialchars($get_substring, ENT_QUOTES, 'UTF-8');<br>
+														    $retrn_value = htmlspecialchars($html_special_chars_correction, ENT_QUOTES, 'UTF-8');<br>
+														    return $retrn_value;<br>
+														}<br>
+													</code>
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+													<br><br>
+													The fix makes sure the browser's compiler doesn't confuse <br>
+													input as code, by replacing special characters.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>
