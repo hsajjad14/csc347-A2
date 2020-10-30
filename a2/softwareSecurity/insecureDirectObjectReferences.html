@@ -3,25 +3,45 @@
 		<h1> # FIX OWASP 2013 A4: INSECURE DIRECT OBJECT REFERENCES </h1>
 		<h2> The Vulnerability </h2>
 		<ul>
-			<li> Brief explanation:
+			<li> Brief explanation:<br><br>
+				An insecure direct object reference is where sensitive information of an object <br>
+				(internal structure, file, url, etc.) is exposed. Withot access control checks This information can be used <br>
+				by an attacker to manipulate reference to access or alter unauthorized data.
 <xmp>
 </xmp>
 			</li>
-			<li> Example code etc.:
+			<li> Example code etc.:<br><br>
+				Under deleteExpression this is what's happening:<br><br>
+				<code>
+					$expressionId = $_REQUEST['expressionId'];<br>
+					$accountId=$_REQUEST['accountId'];<br>
+					$dbconn = pg_connect_db();<br>
+					$result = pg_prepare($dbconn, "", "DELETE FROM solution WHERE id=$expressionId AND accountId=$accountId");<br>
+					$result = pg_execute($dbconn, "", array());<br>
+				</code>
 <xmp>
 </xmp>
 			</li>
-			<li> How attacker exploits this: 
+			<li> How attacker exploits this:
+				<br><br>
+				To show an example, follow the following steps:<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - follow the commands to clear the database on the assignment site<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - login as perl, password = perl<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - add an expression, and logout.<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - login as cliff , password = cliff<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - in the url paste: http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId=1&accountId=10
+				<br>&nbsp;&nbsp;&nbsp;&nbsp; - This causes perl's exprssion to be deleted be cliff.<br>
 <xmp>
 </xmp>
 			</li>
-			<li> Impact: CIAaa and some details
+			<li> Impact: CIAaa and some details<br><br>
+				This creates an Integrity issue as a user's information in storage got deleted <br>
+				by an attacker.<br>
 <xmp>
 </xmp>
 			</li>
 		</ul>
 
-		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
 <xmp>
 </xmp>
                <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
@@ -29,11 +49,36 @@
 </xmp>
                 <h2> The Fix </h2>
                 <ul>
-                        <li> Explain the fix:
+                        <li> Explain the fix:<br><br>
+													The fix we implemented with the tokens for A8 csrf already<br>
+													takes care of most of the issue as an attacker won't be able to guess
+													the right token when trying to delete another's expression. <br>
+													<br>
+													But if they do get past that just check if the expression <br>
+													being deleted belongs to the user who's deleting it. <br>
+													If not raise an error.
+													<br><br>
+													Here is code to check user id's before deleting:<br>
+													<code>
+														$stmtname = "delete_expression";<br>
+											      if ($accountId != $_SESSION['accountId']) {<br>
+											       &nbsp;&nbsp;&nbsp;&nbsp; $g_errors="ERROR: You cannot delete this Expression";<br>
+											      } else {<br>
+											      &nbsp;&nbsp;&nbsp;&nbsp;  $result = pg_prepare($dbconn, $stmtname, "DELETE FROM solution WHERE id=$1 AND accountId=$2");<br>
+											      &nbsp;&nbsp;&nbsp;&nbsp;  $result = pg_execute($dbconn, $stmtname, array(<br>
+											       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     $expressionId,<br>
+											    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;        $accountId<br>
+											     &nbsp;&nbsp;&nbsp;&nbsp;   ));<br>
+											      }<br>
+													</code>
 <xmp>
 </xmp>
                         </li>
-                        <li> How the fix resolves the issue:
+                        <li> How the fix resolves the issue:<br><br>
+													The fix is checking the current user id (inside the session) <br>
+													Against who the expression belongs to. So another user can't <br>
+													delete anothers expression.
+
 <xmp>
 </xmp>
                         </li>

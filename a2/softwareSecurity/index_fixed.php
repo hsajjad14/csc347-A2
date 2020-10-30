@@ -5,6 +5,25 @@ session_start();
 # https://www.owasp.org/index.php/Top_10_2013-Top_10
 ###################################################################################################
 
+function sanitize_input($string, $isUserNameOrPassword)
+{
+    // maximum input length of 25 characters for username/password and 100 for expressions
+    if ($isUserNameOrPassword)
+    {
+        $get_substring = substr($string, 0, 25);
+        $pattern = "/<|>|{|}|&|^|`|~|\/|\\\|\s/";
+        $replacement = "";
+        $cleaned_string = preg_replace($pattern, $replacement, $get_substring);
+        return $cleaned_string;
+    }
+    else
+    {
+        $get_substring = substr($string, 0, 100);
+        $pattern = "/((sqrt)*[\^+*4\-()\/]+)+$/";
+        return preg_match($pattern, $get_substring);
+    }
+}
+
 ###################################################################################################
 # FIX OWASP A8: CSRF (Cross Site Request Forgery)
 # First verify that this is vulnerable. That is, if attacker gets target to follow a malicious
@@ -36,7 +55,7 @@ $_SESSION['token'] = $token;
 $url_with_token="http://192.168.10.100/fourFours/index.php?token=" . $token;
 
 if (!isset($_SESSION['isLoggedIn'])) $_SESSION['isLoggedIn'] = False;
-$operation = $_REQUEST['operation'];
+$operation = sanitize_input($_REQUEST['operation'], True);
 $g_debug = "";
 $g_errors = "";
 
@@ -53,24 +72,6 @@ function pg_connect_db()
     $dbconn = pg_connect("dbname=fourfours user=ff host=localhost password=adg135sfh246");
     pg_set_client_encoding($dbconn, 'UTF8');
     return $dbconn;
-}
-function sanitize_input($string, $isUserNameOrPassword)
-{
-    // maximum input length of 25 characters for username/password and 100 for expressions
-    if ($isUserNameOrPassword)
-    {
-        $get_substring = substr($string, 0, 25);
-        $pattern = "/<|>|{|}|&|^|`|~|\/|\\\|\s/";
-        $replacement = "";
-        $cleaned_string = preg_replace($pattern, $replacement, $get_substring);
-        return $cleaned_string;
-    }
-    else
-    {
-        $get_substring = substr($string, 0, 100);
-        $pattern = "/^[\^+*4\-()\/]+$/";
-        return preg_match($pattern, $get_substring);
-    }
 }
 
 // only continue on if tokens are the same
@@ -119,8 +120,8 @@ if ($check_token) {
   }
   elseif ($operation == "deleteExpression")
   {
-      $expressionId = $_REQUEST['expressionId'];
-      $accountId = $_REQUEST['accountId'];
+      $expressionId = sanitize_input($_REQUEST['expressionId'], True);
+      $accountId = sanitize_input($_REQUEST['accountId'], True);
       $dbconn = pg_connect_db();
 
       ###################################################################################################
@@ -160,7 +161,9 @@ if ($check_token) {
       $expression="";
       $valid_expression=True;
       if (sanitize_input($_POST['expression'], False)) {
-        $expression = $_POST['expression'];
+
+        // max length it can be is 100 so we don't mess up the ui for other users
+        $expression = substr($_POST['expression'], 0, 100);
       } else {
         $g_errors = "not a valid expression";
         $valid_expression=False;
@@ -216,7 +219,10 @@ $g_accountId = $_SESSION['accountId'];
 		<center>
 		<h1>Four Fours</h1>
 		<font color="red"><?=$g_errors ?></font><br/><br/>
-		<? if($g_isLoggedIn && $check_token){
+    <? if(!$check_token) { ?>
+      <font color="red">CHECK TOKEN FAILED, - Cross-Site Request Forgery Attack Or just a refresh</font><br/><br/>
+    <?}?>
+		<? if($g_isLoggedIn){
 			echo "<a href=?token=" . $token . "&operation=logout>Logout</a>"; ?>
 			<br/>
 			<br/>
@@ -292,9 +298,7 @@ $g_accountId = $_SESSION['accountId'];
 					</tr>
 				</table>
 			</form>
-		<? } if(!$check_token) { ?>
-      <font color="red">CHECK TOKEN FAILED, - Cross-Site Request Forgery Attack</font><br/><br/>
-    <?}?>
+		<? } ?>
 		</center>
 	</body>
 </html>
