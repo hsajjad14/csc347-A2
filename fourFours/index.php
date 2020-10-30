@@ -16,10 +16,9 @@
 		$user=$_REQUEST['user'];
 		$password=$_REQUEST['password'];
 		$dbconn = pg_connect_db();
-    $query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd=$2";
-    $stmtname="find_user";
-    $result = pg_prepare($dbconn, $stmtname, $query);
-    $result = pg_execute($dbconn, $stmtname, array($user, $password));
+		$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";
+		$result = pg_prepare($dbconn, "", $query);
+		$result = pg_execute($dbconn, "", array());
 		if($row = pg_fetch_row($result)) {
 			$_SESSION['accountId']=$row[0];
 			$_SESSION['user']=$row[1];
@@ -34,22 +33,19 @@
 		$expressionId = $_REQUEST['expressionId'];
 		$accountId=$_REQUEST['accountId'];
 		$dbconn = pg_connect_db();
-    $stmtname="delete_expression";
-    $result = pg_prepare($dbconn, $stmtname, "DELETE FROM solution WHERE id=$1 AND accountId=$2");
-    $result = pg_execute($dbconn, $stmtname, array($expressionId, $accountId));
+		$result = pg_prepare($dbconn, "", "DELETE FROM solution WHERE id=$expressionId AND accountId=$accountId");
+		$result = pg_execute($dbconn, "", array());
 	} elseif($operation == "addExpression"){
 		$expression = $_REQUEST['expression'];
 		$value=$_REQUEST['value'];
 		$accountId=$_REQUEST['accountId'];
 
 		$dbconn = pg_connect_db();
-    $stmtname="find_expression";
-		$result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE expression=$1");
-		$result = pg_execute($dbconn, $stmtname, array($expression));
+		$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");
+		$result = pg_execute($dbconn, "", array());
 		if(!($row = pg_fetch_row($result))) {
-      $stmtname="add_expression";
-			$result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");
-			$result = pg_execute($dbconn, $stmtname, array($value, $expression, $accountId));
+			$result = pg_prepare($dbconn, "", "insert into solution (value, expression, accountId) values ($value, '$expression', $accountId)");
+			$result = pg_execute($dbconn, "", array());
 		} else {
 			$g_errors="$expression is already in our database";
 		}

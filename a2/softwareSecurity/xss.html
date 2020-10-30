@@ -41,9 +41,10 @@
                         <li> Explain the fix:<br><br>
 													Sanitize the input and output.<br>
 													Whenever someone sends us data, first limit the input/output sizes, so attackers
-													can't manipulate the look of the site using large inputs <br>
-													Next, for all special html characters replace them with<br>
-													a code so they can't be confused by the compiler. <br><br>
+													can't manipulate the look of the site using large inputs. <br>
+													Next, run input through a regex sanitzer and replace any special characters<br>
+													with an empty space. For add expression if there are any characters that <br>
+													don't belong to the expression language, show an error. <br><br>
 													<code>
 														function sanitize_input($string, $isUserNameOrPassword)<br>
 														{<br>
