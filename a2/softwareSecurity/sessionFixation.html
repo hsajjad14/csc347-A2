@@ -4,9 +4,8 @@
 		<h2> The Vulnerability </h2>
 		<ul>
 			<li> Brief explanation:<br><br>
-				Application functions related to authentication and session management are often not<br>
-				implemented correctly, allowing attackers to compromise passwords, keys, or session tokens, or<br>
-				to exploit other implementation flaws to assume other users’ identities.<br>
+				This vulnerabilty arises when application functions related to authentication and session management are not
+				implemented correctly<br>and an attacker can get another users session.
 <xmp>
 </xmp>
 			</li>
@@ -22,11 +21,12 @@
 </xmp>
 			</li>
 			<li> How attacker exploits this:<br><br>
-				If the attacker somehow get's your session, and you use that same session to login<br>
+
+				If the attacker somehow gets your session, and you use that same session to login<br>
 				and the session contains sensitive information (login, password) the attacker <br>
 				now has access to your login and password and can use these.<br><br>
 
-				Say the attacker get's a user's session id somehow before the user logged in. <br>
+				Say the attacker gets a user's session id somehow before the user logged in. <br>
 				Then after the user logs in the attacker can use the same session id to log in as the user. <br>
 				And can do whatever the please.
 				<br><br>
@@ -57,7 +57,9 @@
 				GET /fourFours/index.php HTTP/1.0<br>
 				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
 
-				And we can see in <a href=netcat_useCookie_get_user_alex2.txt>netcat_useCookie_get_user_alex2.txt<a> that the expression is gone.<br>
+				And we can see in <a href=netcat_useCookie_get_user_alex2.txt>netcat_useCookie_get_user_alex2.txt<a> that the expression is gone.<br><br>
+
+				When functions related to authentication and session management are not implemented properly,<br> attackers are able to compromise passwords, keys, session tokens, or exploit other implementation flaws to assume other users’ identities.<br>
 
 <xmp>
 </xmp>
@@ -66,8 +68,8 @@
 				<br><br>
 				Confidentiality issue: Attacker can see all of the victim's data.<br>
 				Integrity issue: Attacker can change or modify the data.<br>
-				Authentication issue: The data is no longer genuine as an attacker can <br>
-				modify it
+				Authentication issue: The data is no longer genuine as an attacker can modify it<br>
+				Accountability issue: The correct person will not be held accountable as the hacker is impersonating another person<br>
 <xmp>
 </xmp>
 			</li>

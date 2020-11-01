@@ -4,9 +4,7 @@
 		<h2> The Vulnerability </h2>
 		<ul>
 			<li> Brief explanation:<br><br>
-				Cross-Site Scripting or XSS allows attackers to send data to the system. <br>
-				Data like scripts that exploit the interpreter in the browser. Almost any source of data
-				<br>can be an attack vector, including internal sources such as data from the database.
+				This vulnerability arises when input/output is not sanitized and attackers are able to send input that can be an attack vector, such as a script to exploit the interpreter in the browser to the system. <br>
 <xmp>
 </xmp>
                         </li>
@@ -28,9 +26,11 @@
 				$result = pg_execute($dbconn, "", array()); <br>
 			</code>
 <br><br>
-			So in here the direct input recieved from the user get's put into the querries.<br>
+			So in here the direct input recieved from the user gets put into the queries.<br>
 			An < XMP> element prevents text from being interpreted as html or text so the <br>
-			compiler tries executing it as it doesn't know better. And scripts can be passed throuhg.<br>
+			compiler tries executing instead as it doesn't know better. <br>
+			This allows the attacker to sent scripts as input and these scripts will get executed.<br>
+
 <xmp>
 </xmp>
                         </li>
@@ -45,10 +45,7 @@
 </xmp>
                         </li>
 			<li> Impact: CIAaa and some details<br><br>
-				This can be a Availability issue, as some scripts can render the entire <br>
-				add expression page useless, so no other user can use it. It can also be an <br>
-				Integrity and Confidentiality issue, as an attacker can enter certain scripts <br>
-				which get user's cookie, then they can act as the user and login and view and change there data.
+				This can be an Availability issue, as some scripts can render an entire webpage useless, so no other user can use it. <br>It can also be a Accountability, Confidentiality, and Integrity issue, as an attacker can enter certain scripts which can get user's cookies. <br> The attacker can then impersonate other users, view sensitive data about the user, and also modify their data
 <xmp>
 </xmp>
                         </li>
@@ -68,8 +65,8 @@
 													Sanitize the input and output.<br>
 													Whenever someone sends us data, first limit the input/output sizes, so attackers
 													can't manipulate the look of the site using large inputs. <br>
-													Next, run input through a regex sanitzer and replace any special characters<br>
-													with an empty space. For add expression if there are any characters that <br>
+													Next, run input through a regex sanitzer and replace any special characters
+													with an empty space.<br> For add expression, if there are any characters that
 													don't belong to the expression language, show an error. <br><br>
 													<code>
 														function sanitize_input($string, $isUserNameOrPassword)<br>
@@ -121,8 +118,7 @@
                         </li>
                         <li> How the fix resolves the issue:
 													<br><br>
-													The fix makes sure the browser's compiler doesn't confuse <br>
-													input as code, by replacing special characters.
+													The fix makes sure the browser's compiler doesn't confuse user input as code by replacing special characters.
 <xmp>
 </xmp>
                         </li>

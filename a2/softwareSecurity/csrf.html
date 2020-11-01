@@ -4,8 +4,8 @@
 		<h2> The Vulnerability </h2>
 		<ul>
 			<li> Brief explanation:<br><br>
-				An attacker can that can obtain a victim's cookies for a site <br>
-				can act as the victim and gain access as the victim to the site.
+				An attacker that can obtain a victim's cookies for a site is able to 
+				impersonate the victim and gain access to the site as the victim.
 <xmp>
 </xmp>
 			</li>
@@ -30,9 +30,7 @@
 					$operation=$_REQUEST['operation'];<br>
 					<br><br>
 					</code>
-					Baisically almost everywhere where it is using $_REQUEST. Because the <br>
-					attacker can inject things into the url to get what they want, it is <br>
-					very predictable and easy.
+					Basically almost everywhere where it is using $_REQUEST. Because the attacker can inject things into the url to get what they want<br> It is very predictable and easy.
 <xmp>
 </xmp>
 			</li>
@@ -75,8 +73,8 @@
 				<br><br>
 				Confidentiality issue: Attacker can see all of the victim's data.<br>
 				Integrity issue: Attacker can change or modify the data.<br>
-				Authentication issue: The data is no longer genuine as an attacker can <br>
-				modify it
+				Authentication issue: The data is no longer genuine as an attacker can modify it <br>
+				Accountability issue: Since the hacker is impersonating another user, we are not <br>able to hold the correct person accountable for their actions<br>
 <xmp>
 </xmp>
 			</li>
@@ -97,9 +95,8 @@
 				information (a token) and check if the web browser sends it back.<br>
 				 The token must be unique and impossible to guess by a third party.<br>
 				  The application must not proceed unless it verifies that piece of information.<br>
-					Send this token in the url so an attacker can't guess the url. Also <br>
-					This prevents the user from doing repeat actions by refreshing. For example <br>
-					If they add a expression and refresh it won't attempt to add it again.
+					Send this token in the url so an attacker can't guess the url. <br>Also 
+					this prevents the user from doing repeat actions by refreshing.<br> For example, if they add a expression and refresh it won't attempt to add it again.
 <xmp>
 </xmp>
 			</li>
@@ -146,8 +143,7 @@
 					<br><br>
 					So by checking the returned token with the one in the session we can make sure
 					that the correct form was filled out and by the intended person.<br>
-					An attacker can not get past this as they will not be able to guess the randomly generated<br>
-					token.
+					An attacker can not get past this as they will not be able to guess the randomly generated token.
 <br><br>
 
 				</code>

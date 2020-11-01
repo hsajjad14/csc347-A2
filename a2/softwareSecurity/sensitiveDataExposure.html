@@ -5,10 +5,8 @@
 		<ul>
 			<li> Brief explanation:
 				<br><br>
-				Sensitive data that exists in the server should be given extra protection. <br>
-				If this data is somehow leaked or exposed in someway and is not properly encrypted <br>
-				then the attacker has access to it and can use it in any way they want. <br>
-				So we need to encrypt the data in the server to resolve this.
+				This vulnerablity arises when sensitive data is not properly encrypted, allowing users to easily view/use this information once they get access to it. <br>
+
 <xmp>
 </xmp>
 			</li>
@@ -37,7 +35,7 @@
 				sqlmap -u "http://192.168.10.100/fourFours/index.php?operation=login&user=haider&password=something" -D public -T account -C id,firstname,lastname,passwd,username --dump
 				<br>
 				It will spit out the entire account table. Although this is a sql injection <br>
-				vulnerablity this is also a sensitive data exposure, as the passwords are so easily exposed <br>
+				vulnerablity, this is also a sensitive data exposure, as the passwords are easily exposed <br>
 				using simple sql injections and an sql injection attack:<br><br>
 				+------+-----------+-------------+----------------+-----------------------+<br>
 				| id   | firstname | lastname    | passwd         | username              |<br>
@@ -64,13 +62,9 @@
 			</li>
 			<li> Impact: CIAaa and some details
 				<br><br>
-				Unencrypted passwords or other sensitive information allow them to be <br>
-				very easily used by the attacker incase of a data breach. With this <br>
-				vulnerablity the software violates Confidentiality, as an attacker can <br>
-				easily see and use sensitive information. It also violates Integrity as <br>
-				the attacker can change any of the users data in the system by using the <br>
-				leaked data pretending to be them. Authentication is also violated as we <br>
-				can no longer insure the data is geniuine.
+				With this vulnerablity, the software violates Confidentiality.<br> This is because if there is a data breach, confidential information that is not encrypted could be easily viewed/used by the attacker.<br>
+				Integrity is also violated. If login information is leaked, an attacker can gain access to the system and change users data in the system. <br> Authentication is also violated as we can no longer ensure the data is genuine as an attacker could potentially modify data through logging in as a user.
+				<br> Accountability is also violated as if an attacker gains login information for users, they are able to impersonate them and we won't be able to hold the correct person accountable for their actions.<br>
 <xmp>
 </xmp>
 			</li>
@@ -163,10 +157,8 @@
                         </li>
                         <li> How the fix resolves the issue:
 													<br><br>
-													By encrypting the passwords in the database it is much more <br>
-													difficult to crack them without know the hashing algorithm <br>
-													and salt usage before hand. This means even with the data breach <br>
-													the passwords are still protected by the encryption.
+													Sensitive data that exists in the server should be given extra protection. <br>
+													By encrypting passwords in the database, the data is much more secure. <br> This way, if a potential data breach does occur, the passwords will still be protected by the encryption.<br> This will make it much more difficult for an attacker to gain acesss to this sensitive information as he must also crack the encryption, and without knowing the hashing algorithm and salt usage before hand, this is very difficult.<br>
 <xmp>
 </xmp>
                         </li>

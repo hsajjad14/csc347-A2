@@ -4,9 +4,8 @@
 		<h2> The Vulnerability </h2>
 		<ul>
 			<li> Brief explanation:<br><br>
-				An insecure direct object reference is where sensitive information of an object <br>
-				(internal structure, file, url, etc.) is exposed. Withot access control checks This information can be used <br>
-				by an attacker to manipulate reference to access or alter unauthorized data.
+				An insecure direct object reference vulnerability occurs when sensitive information of an object <br>
+				(internal structure, file, url, etc.) is exposed without access control checks.
 <xmp>
 </xmp>
 			</li>
@@ -30,21 +29,20 @@
 			</li>
 			<li> How attacker exploits this:
 				<br><br>
+				This information can be used by an attacker to manipulate reference to access and/or alter unauthorized data. <br>
 				To show an example, follow the following steps:<br>
 				&nbsp;&nbsp;&nbsp;&nbsp; - follow the commands to clear the database on the assignment site<br>
 				&nbsp;&nbsp;&nbsp;&nbsp; - login as perl, password = perl<br>
 				&nbsp;&nbsp;&nbsp;&nbsp; - add an expression, and logout.<br>
 				&nbsp;&nbsp;&nbsp;&nbsp; - login as cliff , password = cliff<br>
 				&nbsp;&nbsp;&nbsp;&nbsp; - in the url paste: http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId=1&accountId=10
-				<br>&nbsp;&nbsp;&nbsp;&nbsp; - This causes perl's exprssion to be deleted be cliff.<br>
+				<br>&nbsp;&nbsp;&nbsp;&nbsp; - This causes perl's expression to be deleted by cliff.<br>
 <xmp>
 </xmp>
 			</li>
 			<li> Impact: CIAaa and some details<br><br>
-				This creates an Integrity issue as a user's information in storage got deleted <br>
-				by an attacker.<br>
-				Also it is an Authentication issue: The data is no longer genuine as an attacker can <br>
-				modify it
+				This creates an Integrity issue as a user's information in storage got deleted by an attacker.<br>
+				Also it is an Authentication issue: The data is no longer genuine as an attacker can modify it<br>
 <xmp>
 </xmp>
 			</li>
