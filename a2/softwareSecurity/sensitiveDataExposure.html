@@ -150,7 +150,26 @@
 													| 14   | Jesse     | Kowalski    | d3058165c9186658cc8c99bb664bf0a749b3edd2499968bf456ba4ecefe122ff | YGqbQB8VHs | eightball@gmail.com   |<br>
 													| 15   | Ivanna    | Grant       | d1cebe5afe1c24b3b1229ec4089f76755901250263d96554460cf58c9208fccd | UTw035yFQL | ivanna                |<br>
 													+------+-----------+-------------+------------------------------------------------------------------+------------+-----------------------+<br>
+													<br><br>
+													Also to fix the application to use https instead, follow these steps: <br>
+												<br>	 - Use this command: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mysitename.key -out mysitename.crt
+													 <br>
+													 to create the certificate as well as the key. Or as I already did use: <a href=mysitename.crt>mysitename.crt<a> and <a href=mysitename.key>mysitename.key<a>. Open with a text editor (notepad, atom) to view the contents. <br>
+													<br>-	Then in /etc/apache2/apache2.conf add these lines to the file:
+														<code><br><br>
+															# adding ssl<br>
+															< VirtualHost 192.168.10.100:443><br>
+															DocumentRoot /var/www/fourFours<br>
+															SSLEngine on<br>
+															SSLCertificateFile /home/arnold/cert/mysitename.crt<br>
+															SSLCertificateKeyFile /home/arnold/cert/mysitename.key<br>
+															< / VirtualHost>
+<br><br>
+														</code>
 
+														So the file will become like: <a href="apache2_fixed_for_ssl.conf">apache2.conf</a>
+														<br>
+														Then run '/usr/sbin/apache2ctl restart' to restart the apache webserver and get https on the application.
 
 <xmp>
 </xmp>

@@ -19,3 +19,5 @@ notes from oh:
 
 
     bcrypt()
+
+    /usr/sbin/apache2ctl restart
