@@ -61,8 +61,8 @@
   	password         (arnold)
   	Proceeding with incremental:ASCII
 	
-	After waiting ~5 hours, we were able to crack 2 out of the 5 accounts.
- 	We can use john shadow --show to see the results.
+	After waiting ~8 hours, we were able to crack 2 out of the 5 accounts.
+ 	We can use 'john shadow --show' to see the results.
 
 	john shadow --show
 	arnold:password:16861:0:99999:7:::
@@ -79,13 +79,31 @@
 
 	EXPLAIN HOW YOU DO THIS AND PLACE MODIFIED FILES ETC IN THIS DIRECTORY
 	
-	- First I edited the /etc/passwd file in the Ubuntu804_owasp drive and changed 
-	  the UID of sid to 0 and group of sid to 0 as well to make it a root user and root group
-	
-	- Next, from the results of John the Ripper, we know that the user arnold has 'password' as his password. 
-	  Using this information, I can go to the /etc/shadow drive in the Ubuntu804_owasp vm and copy the hash and the salt from  
-	  arnold's account and replace the hash + salt for sid with this. Now sid will have the password 'password'.
-	  
+	To do this, I first edited the /etc/passwd file of the Ubuntu804_owasp drive.
+	I changed both the UID and GID of sid to be 0. This makes sid a root user and
+	in the root group.
+
+		BEFORE:
+				root:x:0:0:root:/root:/bin/bash
+				sid:x:1003:1003::/home/sid:/bin/bash
+    		AFTER:
+				root:x:0:0:root:/root:/bin/bash
+				sid:x:0:0::/home/sid:/bin/bash
+
+	To change the password of sid to 'password', I used the results of John the
+	Ripper. From the results I learned that the user arnold has the password
+	'password'. To give sid this same password, I went to the /etc/shadow file in
+	the Ubuntu804Server_owasp drive and replaced the hash and salt that is currently
+	stored for sid with the hash and salt that is stored for arnold.
+
+		BEFORE:
+				arnold:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16861:0:99999:7:::
+				sid:$1$fb4hbPgA$BYM2rUZa53dbwf/eTN3uk/:16735:0:99999:7:::
+
+		AFTER:
+				arnold:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16861:0:99999:7:::
+				sid:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16735:0:99999:7:::
+				
 
 2d) NOTHING TO REPORT HERE
 
