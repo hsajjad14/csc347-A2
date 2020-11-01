@@ -252,6 +252,12 @@ if ($check_token)
         $_SESSION['isLoggedIn'] = False;
         session_regenerate_id(True);
     }
+} else {
+    if ($operation == "logout") {
+        unset($_SESSION);
+        $_SESSION['isLoggedIn'] = False;
+        session_regenerate_id(True);
+    }
 }
 
 $g_isLoggedIn = $_SESSION['isLoggedIn'];
@@ -269,7 +275,7 @@ $g_accountId = $_SESSION['accountId'];
 		<center>
 		<h1>Four Fours</h1>
 		<font color="red"><?=$g_errors ?></font><br/><br/>
-    <? if(!$check_token) { ?>
+    <? if(!$check_token && $g_isLoggedIn) { ?>
       <font color="red">CHECK TOKEN FAILED, - Cross-Site Request Forgery Attack Or just a refresh</font><br/><br/>
     <?}?>
 		<? if($g_isLoggedIn){
