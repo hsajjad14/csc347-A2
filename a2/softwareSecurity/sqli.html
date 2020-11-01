@@ -18,7 +18,8 @@
 			<li> Example code etc.:
 				<br>
 				<br>
-				Some example code is: <br>
+				Some example code is: <br><br>
+				<code>
 				$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
 				$result = pg_prepare($dbconn, "", $query);<br>
 				$result = pg_execute($dbconn, "", array());<br><br>
@@ -26,6 +27,10 @@
 				$dbconn = pg_connect_db();<br>
 				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
 				$result = pg_execute($dbconn, "", array()); <br>
+			</code>
+			<br><br>
+			So in the code above we can see the parameters are directly getting passed into the <br>
+			query and nothing actually is being prepared.
 <xmp>
 </xmp>
 			</li>
@@ -54,11 +59,21 @@
 		</ul>
 
 		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+		These are some commands that show sql injection vulnerablity:<br><br>
+		- x' and passwd is null<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;- this returns: Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...ROM<br>
+    		&nbsp;&nbsp;&nbsp;&nbsp;  account WHERE username='x' and passwd is null;' AND pass... ^ in /var/www/fourFours/index.php on line 20
+		<br><br>
+		- x' and username is null;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;- Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...M<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;	  account WHERE username='x' and username is null;' AND pass... ^ in /var/www/fourFours/index.php on line 20
+		<br>
+		<br>
+		More in here:
+			<a href=sql_injections_example.txt>sql_injections_example.txt</a>
 <xmp>
 </xmp>
-               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
-<xmp>
-</xmp>
+
                 <h2> The Fix </h2>
                 <ul>
                         <li> Explain the fix:
@@ -67,6 +82,7 @@
 													Use prepared statements so when querries are sent to the database<br>
 													it knows what is paramaters and what is executable querries.<br><br>
 													So for this querry that is sent when a user logs in: <br>
+													<code>
 													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
 													$result = pg_prepare($dbconn, "", $query);<br>
 													$result = pg_execute($dbconn, "", array());<br><br>
@@ -74,7 +90,27 @@
 													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd=$2";<br>
 													$stmtname="find_user";<br>
 													$result = pg_prepare($dbconn, $stmtname, $query);<br>
-													$result = pg_execute($dbconn, $stmtname, array($user, $password));
+													$result = pg_execute($dbconn, $stmtname, array($user, $password));<br>
+<br>
+													Here are some more places that would change :<br>
+<br>
+													$stmtname = "find_expression";<br>
+							            $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE expression=$1");<br>
+							            $result = pg_execute($dbconn, $stmtname, array(<br>
+						    &nbsp;&nbsp;&nbsp;&nbsp;	                $expression<br>
+							            ));<br>
+
+													$stmtname = "add_expression";<br>
+					                $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");<br>
+					                $result = pg_execute($dbconn, $stmtname, array(<br>
+					    &nbsp;&nbsp;&nbsp;&nbsp;                    $value,<br>
+					       &nbsp;&nbsp;&nbsp;&nbsp;                 $expression,<br>
+					    &nbsp;&nbsp;&nbsp;&nbsp;                    $accountId<br>
+					                ));<br>
+												</code><br><br>
+												So what it's doing is that it is preparing the querry to take in parameters <br>
+												Then passing the paramaters in when executing so postgreSQL knows these are <br>
+												parameters and not executable.
 <xmp>
 </xmp>
                         </li>

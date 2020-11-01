@@ -1,0 +1,146 @@
+<html>
+	<body>
+		<h1> Example: printf format string vulnerability </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+<xmp>
+The printf format string vulnerability arises when the user
+provides a string that is used as the format string argument
+to printf(fmt, args); 
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br/><b>NOTE TO STUDENT:</b> Code here comes from the given vulnerable code.
+				<br/>In this example, code comes from <a href=printfVulnerability.c>printfVulnerability.c</a>. For your answer,
+				code (or other source) comes from the system I gave you. It could be index.php, from the schema, from some other files on the system.
+<xmp>
+// From printfVulnerability.c
+int handle(char *user, char *secret){
+		...
+                printf(user);
+		...
+		printf(user);
+		...
+}
+int main(int argc, char ** argv){
+        char user[100];
+	...
+                gets(user);
+                if(handle(user, secret))break;
+	...
+}
+</xmp>
+			In the above code, the users input is directly used as the
+			format string for a printf statement.  
+			</li>
+			<li> How attacker exploits this: 
+<xmp>
+# First determine if it is vulnerable
+./printfVulnerability
+Input name: Arn %x old
+Hi Arn c51c7008 old
+
+# We are looking at the stack, so walk down 
+# and %s things that look like memory addressed
+
+Input name: %x %x %x
+Hi c51c7008 4d ffffffff
+Input name: %s
+Hi Mr. Myxzptlk
+Input name: %s %x %x %x
+Hi Mr. Myxzptlk 4d ffffffff 6b60fe40
+
+# ....
+
+Input name: %s %x %x %x %x %x
+Hi Mr. Myxzptlk 4d ffffffff 6b60fe40 3 34201027 6b60fe40
+Input name: %s %x %x %x %x %s
+Hi Mr. Myxzptlk 4d ffffffff 6b60fe40 3 csc347 is great!!
+Input name: Mr. Myxzptlk
+Hi Mr. Myxzptlk
+The secret is csc347 is great!!
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+<xmp>
+Compromise of C (Confidentiality)
+The system was designed to prevent any unauthorized users from seeing
+the secret...
+"csc347 is great!!"
+Additionally, we know the credentials for an authorized user
+"Mr. Myxzptlk"
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+When the system requests:
+
+	Input name:
+
+The user provides input:
+
+	Arn %x old
+	
+The system responds with (for example):
+
+	Hi Arn c51c7008 old
+
+If there was no printf vulnerability, we would expect:
+
+	Hi Arn %x old
+
+The difference is that the %x appears to be replaced with a
+hex value (c51c7008) in the above example, indicating that a printf format string
+is derived directly from the users input at "Input name:"
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+<xmp>
+############################################################
+# printf(user); is replaced by printf("%s",user); in handle
+############################################################
+int handle(char *user, char *secret){
+		...
+                printf("%s",user); // replaces printf(user);
+		...
+                printf("%s",user); // replaces printf(user);
+		...
+}
+int main(int argc, char ** argv){
+        char user[100];
+	...
+                gets(user);
+                if(handle(user, secret))break;
+	...
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+<xmp>
+Users input plays the role of a string in this printf statement, 
+with a programmer supplied format string "%s". In this way, user input
+can not be misinterpreted by printf. In the above attacks, the output
+will simply be "Hi " followed by the users input, uninterpreted.
+For example:
+
+Input name: %s %x %x %x %x %x
+Hi %s %x %x %x %x %x
+
+This prevents the attacker from investigating the stack and from 
+causing the program to render secret strings held in memory.
+</xmp>
+<b>NOTE TO STUDENT:</b> This example was a bit simple. In a more complex
+example, 
+<br/>
+<b>Explain the fix:</b> talks about the how the code works.
+<br/>
+<b>How the fix resolves the issue:</b> gives you a chance to 'run through'
+the code under an attack scenario to see that it prevents it.
+                        </li>
+                </ul>
+
+	</body>
+</html>

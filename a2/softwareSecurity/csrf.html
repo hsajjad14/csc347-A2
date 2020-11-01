@@ -10,7 +10,29 @@
 </xmp>
 			</li>
 			<li> Example code etc.:
-
+					<br><br>
+					Some examples of bad code which cause csrf attacks in index.php:
+<br><br>
+					<code>
+					if($operation == "login"){<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$user=$_REQUEST['user'];<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$password=$_REQUEST['password'];<br>
+						...<br>
+<br>
+					} elseif($operation == "deleteExpression"){<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$expressionId = $_REQUEST['expressionId'];<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$accountId=$_REQUEST['accountId'];<br>
+						...<br>
+					$expression = $_REQUEST['expression'];<br>
+					$value=$_REQUEST['value'];<br>
+					$accountId=$_REQUEST['accountId'];<br>
+					...<br>
+					$operation=$_REQUEST['operation'];<br>
+					<br><br>
+					</code>
+					Baisically almost everywhere where it is using $_REQUEST. Because the <br>
+					attacker can inject things into the url to get what they want, it is <br>
+					very predictable and easy.
 <xmp>
 </xmp>
 			</li>
@@ -53,13 +75,18 @@
 				<br><br>
 				Confidentiality issue: Attacker can see all of the victim's data.<br>
 				Integrity issue: Attacker can change or modify the data.<br>
-				Availability issue: Attacker can make a service unusable for the victim.<br>
+				Authentication issue: The data is no longer genuine as an attacker can <br>
+				modify it
 <xmp>
 </xmp>
 			</li>
 		</ul>
 
 		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+		<br><br>
+		Run http://192.168.10.100/fourFours/index.php as a user. Then using it's cookies<br>
+		run netcat on kali, and follow the above commands. We can clearly use the user's <br>
+		cookie to login as them and do whatever we want.
 <xmp>
 </xmp>
 		<h2> The Fix </h2>
@@ -78,6 +105,12 @@
 			</li>
 			<li> How the fix resolves the issue:<br><br>
 
+				The code below first check's if there's a token in the url, then it compares <br>
+				it with the one in the session to make sure it's the right person and form. <br>
+				Then it assigns a new random token to the session. And anytime we login, logout, <br>
+				delete an expression, add an expression we add the token to the url. So it can <br>
+				be checked against the session token .
+				<br><br>
 				checking if token recieved in the url is the same as the one sent:<br><br>
 				<code>
 					$check_token = True;<br><br>

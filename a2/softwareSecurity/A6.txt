@@ -1,0 +1,125 @@
+A6 – Sensitive Data Exposure
+
+Random salts:
+
+h6S6TV9ZQO
+qGgNELUsuR
+TADfXcfLTA
+jDpXcl0NcM
+B9rPf8COA0
+6XS8yYPz6j
+cfGy4hdDid
+L1mVlAMucY
+VrcSdKaWCl
+z5f1HfTBv1
+mm3le524vf
+BKy8F6cqxe
+rYQqsGjO0w
+YGqbQB8VHs
+UTw035yFQL
+
+Each salt hashed (sha256):
+
+f7b441040edf5ea42413c39a91b97790da0a3a2c6376751c08e08699f48ed365
+ee6c02f7c5bbcd982bfa5c2b4f7a23c1cc53ae016e1d0fa12abebe8801125926
+5e398b62913ea8dcefc480c032d1271f4f61d8187f394c00c4fa461523dd4ee5
+fb6464a55737be8abd645067723430ef3a01b7461720b8915a4cc0bf560f8fa5
+df7908348a4ad3a3dc0d6ba4d162e7fb140287e0ea8ef53fcca8b85dccbc0fb5
+056a86325bacc760129930ec32fd1c8850951eb0d067650b78cff220ab47d2df
+88457a45af91d58c16c263c75e99ed7b1439f90c3ab0919df9065e2b2ad9939d
+52649a3c5e444180ea64679535cf6747ba68bd53bb954268f1e5651189fc366e
+aaf144780971cd5021088e6d0562ee6c419db0808b229a3b3682a061f3d770f1
+df70fcb257c794cf99a6290cc5f6e45dcad23dc50528894ecc6f8876283d2f19
+70c2a63bd1782a26910cde063caac4b518a09dbe9953971da831684f30d4b8eb
+2ed13aa3a4b03d69498e68faaef1125a0cc0a5f0d22229182efc0f5b75f3c706
+902bd6f124b402080e16286187bf2f770fb75cfaf307a4ec4e7f8220ea2baab3
+02c7ccb682992b15bc97430cfb4e3874c5483170c47bd2f306049f08d8f98545
+6aabfa69696ace040d10f89220e047e1322bb50364bcbee24cfbb2639c6e07df
+
+
+passwords:
+sdfdsfd
+lion
+fourfivesix
+silverisbetter
+password1
+password
+passw0rd
+cliff
+sdxfdsgger
+perl
+Peter
+jbh
+esrever
+badPassword
+grant
+
+
+Using this script we generate the passwords to be stored in the database.
+The general algorithm is: hash('sha256', hash('sha256', salt) + password)
+
+<?php
+$salts = array(
+"h6S6TV9ZQO",
+"qGgNELUsuR",
+"TADfXcfLTA",
+"jDpXcl0NcM",
+"B9rPf8COA0",
+"6XS8yYPz6j",
+"cfGy4hdDid",
+"L1mVlAMucY",
+"VrcSdKaWCl",
+"z5f1HfTBv1",
+"mm3le524vf",
+"BKy8F6cqxe",
+"rYQqsGjO0w",
+"YGqbQB8VHs",
+"UTw035yFQL");
+
+$passwords = array(
+"sdfdsfd",
+"lion",
+"fourfivesix",
+"silverisbetter",
+"password1",
+"password",
+"passw0rd",
+"cliff",
+"sdxfdsgger",
+"perl",
+"Peter",
+"jbh",
+"esrever",
+"badPassword",
+"grant",
+);
+
+$index=0;
+if (count($passwords) == count($salts)){
+	foreach ($salts as &$value) {
+    	echo hash("sha256", hash("sha256", $salts[$index]) .  $passwords[$index]) . "----\n";
+    	echo $salts[$index] . "---" . $passwords[$index] . "---\n";
+    	$index++;
+	}
+}
+?>
+
+This output is in the form:
+<hashed password = hash( sha256, hash(sha256, salt) + password)>---- <salt>    ---<password>
+
+output:
+3b9c2126a5f3215ddfd3b161eab25a6123474e92551ae5fccfa2ee9204e90817---- h6S6TV9ZQO---sdfdsfd---
+515e2fa5c2f72841e182512fb478ee1a8bda82101a581d6071f8c08bded556a9---- qGgNELUsuR---lion---
+6dbb7841871b7bde916d1345b51d97bdf4f49ed02f827577ba2e2139bfd26b7f---- TADfXcfLTA---fourfivesix---
+228c3d15af0dbb2a6d850e6517b3180c8ba52c5e3c7a21822a739e2ad3b7c903---- jDpXcl0NcM---silverisbetter---
+db536d4060562e628c2ab0998dd795a201fcbaa8c16d9b7ab841640a14e02726---- B9rPf8COA0---password1---
+cd5eb0a20b0af30b2f3740bce277467eb366218e95672327453ec0e65f4070b1---- 6XS8yYPz6j---password---
+91ba019881f0c31cc456ced60ae4919e87b8919606914b992930aa82cd95a97b---- cfGy4hdDid---passw0rd---
+01b1dec23632c9ea7bd9d45882be9fc49aec125bb8323f6b3220c94b4716805a---- L1mVlAMucY---cliff---
+9db7541217ec6cc86bdd3ffa906b4cea3c709fdddd2ab0ab72c08227016aa0c2---- VrcSdKaWCl---sdxfdsgger---
+22f2ec05c3bfed8212c1303df70d92bb96f0d14dc7f98c9e2bae4050fd575b0e---- z5f1HfTBv1---perl---
+303bb13d6fa2ca6fa217b7be6912edf41911905edc1316c2a439e69f22d7b401---- mm3le524vf---Peter---
+14cfaf39b2defad4354b32520821b1685e2b194f88b922b628f1de8ebbbeca56---- BKy8F6cqxe---jbh---
+2056790772b710a894e3d396d71c270e240b3d47edc7e7039711db52c877e791---- rYQqsGjO0w---esrever---
+d3058165c9186658cc8c99bb664bf0a749b3edd2499968bf456ba4ecefe122ff---- YGqbQB8VHs---badPassword---
+d1cebe5afe1c24b3b1229ec4089f76755901250263d96554460cf58c9208fccd---- UTw035yFQL---grant---
