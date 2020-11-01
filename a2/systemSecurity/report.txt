@@ -1,34 +1,32 @@
 1) [2 Marks]
 	Command to init the database: /usr/sbin/tripwire --init
 	Command to run a check: /usr/sbin/tripwire --check
-	Command to get a report: /usr/sbin/twprint -m r --twrfile /var/lib/tripwire/report/ubuntu804Server-20201024-201529.twr
+	Command to get a report: /usr/sbin/twprint -m r --twrfile /var/lib/tripwire/report/ubuntu804Server-20201031-173656.twr
 	Place the report in twreport1.txt
-
-
-
-
-
-		https://www.redhat.com/sysadmin/security-monitoring-tripwire
 
 2a) [5 Marks] Document the steps you took to 'take the drive out of the Ubuntu804_owasp VM and place it in the Kali VM'. 
 	1) First shutdown the Ubuntu804_owasp vm.
-	2) Remove the drive from Ubuntu804_owasp vm
-		- this is done by going to settings and clicking hardware remove drive:: FINISH THIS
 
-	3) Attach the Ubuntu804_osap drive to the Kali vm.
-		-This is done by:
-			2) Open the kali vm in another window (but don't power it on)
-			3) On the left side where it says "Devices" click on "Hard Disk (SCSI)"
-			4) A new window will open up. Near the bottom left click the button that says "Add..."
-			5) Click Hard Disk then click next
-			6) Pick SCSI disk type and then click next
-			7) Pick "Use an existing virtual disk" then click next
-			8) Click browse and go to the folder where Ubuntu804Server_owasp is stored on your computer
-			9) Open the Ubuntu virtual disk (Ubuntu.vmdk) 
-			10) Click finish and then click keep existing format
-			11) Click OK at the bottom right 
-	
-	4) Power on Kali VM. It now has access to its original drive as well as the drive from the Ubuntu804_owasp vm
+	2) Remove the drive from the Ubuntu804_owasp VM
+        	To do this in the VM:
+            		- On the top click "VM" and then click "Settings..."
+            		- In the new window that opened, click on "Hard Disk (SCSI)"
+            		- click the "Remove" button at the bottom of the window and then press OK
+
+ 	3) Attach the Ubuntu804_osap drive to the Kali VM.
+          	To do this in the VM:
+            		- Open the kali VM in another window (but do not power it on)
+		        - On the top click "VM" and then click "Settings..."
+		        - In the new window that opened up, click the button that says "Add..." near the bottom left
+            		- Click Hard Disk then click next
+            		- Pick SCSI disk type and then click next
+            		- Pick "Use an existing virtual disk" then click next
+            		- Click "Browse" and go to the folder where Ubuntu804Server_owasp is stored on your computer
+            		- Open the Ubuntu virtual disk (Ubuntu.vmdk)
+            		- Click "Finish" and then click "Keep Existing Format"
+            		- Click "OK" at the bottom right
+
+  	4) Power on Kali VM. It now has access to its original drive as well as the drive from the Ubuntu804_owasp VM
 
 
 
@@ -37,17 +35,75 @@
 
 	PLACE john the ripper results below. 
 
-ARNOLD : Wait as long as you think is reasonable, then report your results, including which passwords were not broken and whether you feel that they are secure enough. Why do you believe they are secure?
+	Created directory: /root/.john
+  	Warning: detected hash type "md5crypt", but the string is also recognized as "md5crypt-long"
+  	Use the "--format=md5crypt-long" option to force loading these as that type instead
+  	Using default input encoding: UTF-8
+  	Loaded 5 password hashes with 5 different salts (md5crypt, crypt(3) $1$ (and variants) [MD5 128/128 XOP 4x2])
+  	Will run 4 OpenMP threads
+  	Proceeding with single, rules:Single
+  	Press 'q' or Ctrl-C to abort, almost any other key for status
+  	Warning: Only 26 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 27 candidates buffered for the current salt, minimum 32 needed for performance.
+  	joeeoj           (joe)
+  	Warning: Only 20 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 23 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 5 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 19 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 29 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Almost done: Processing the remaining buffered candidate passwords, if any.
+  	Warning: Only 2 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 22 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Warning: Only 28 candidates buffered for the current salt, minimum 32 needed for performance.
+  	Further messages of this type will be suppressed.
+  	To see less of these warnings, enable 'RelaxKPCWarningCheck' in john.conf
+  	Proceeding with wordlist:/usr/share/john/password.lst, rules:Wordlist
+  	password         (arnold)
+  	Proceeding with incremental:ASCII
+	
+	After waiting ~8 hours, we were able to crack 2 out of the 5 accounts.
+ 	We can use 'john shadow --show' to see the results.
+
+	john shadow --show
+	arnold:password:16861:0:99999:7:::
+	joe:joeeoj:16735:0:99999:7:::
+
+	2 password hashes cracked, 3 left
+
+	We can conclude that the other 3 accounts have relativly safe passwords,
+	as they weren't able to be cracked in single crack mode or wordlist mode,
+	and after a long time in brute force mode, John the Ripper still hasn't cracked
+	the passwords. 
 
 2c) [2 Marks] Modify user sid so that they are now a root user with password 'password'. 
-	 
-	- first i edited the /etc/passwd file in the ubuntu hard drive and changed 
-	  the uid and group of sid to 0 and 0 to make it root user and root group
-	- next, since arnold has password as its password. I copied the hash + the salt
-	  from the the arnold account in /etc/shadow, and replaced the hash + salt for sid
-	  
 
 	EXPLAIN HOW YOU DO THIS AND PLACE MODIFIED FILES ETC IN THIS DIRECTORY
+	
+	To do this, I first edited the /etc/passwd file of the Ubuntu804_owasp drive.
+	I changed both the UID and GID of sid to be 0. This makes sid a root user and
+	in the root group.
+
+		BEFORE:
+				root:x:0:0:root:/root:/bin/bash
+				sid:x:1003:1003::/home/sid:/bin/bash
+    		AFTER:
+				root:x:0:0:root:/root:/bin/bash
+				sid:x:0:0::/home/sid:/bin/bash
+
+	To change the password of sid to 'password', I used the results of John the
+	Ripper. From the results I learned that the user arnold has the password
+	'password'. To give sid this same password, I went to the /etc/shadow file in
+	the Ubuntu804Server_owasp drive and replaced the hash and salt that is currently
+	stored for sid with the hash and salt that is stored for arnold.
+
+		BEFORE:
+				arnold:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16861:0:99999:7:::
+				sid:$1$fb4hbPgA$BYM2rUZa53dbwf/eTN3uk/:16735:0:99999:7:::
+
+		AFTER:
+				arnold:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16861:0:99999:7:::
+				sid:$1$dIvnzRCg$gHM9YMivSDtPZ1KApSBIe.:16735:0:99999:7:::
+				
 
 2d) NOTHING TO REPORT HERE
 
@@ -74,15 +130,31 @@ ARNOLD : Wait as long as you think is reasonable, then report your results, incl
 	.bash_history # what is this, whos should you look at and why are you looking?
 
 		WHAT DID YOU LEARN
-		- This shows us the a history of commands that were run from this account. In general after we get a suspicious tripwire report we should examine all the accounts that logged in between the last report and the new suspicous report. We should look at sids bash history as we suspect that this account has been compromised. We are looking to determine exactly what the user has done on the system and look for any sort of modification/attacks that they could have made to the system so we can begin to fix them
+		- This shows us the a history of commands that were run from this account. 
+		In general after we get a suspicious tripwire report we should examine all the accounts that logged in between the last report and the new suspicous report.
+		We should look at sids bash history as we suspect that this account has been compromised. 
+		We are looking to determine exactly what the user has done on the system and look for any
+		sort of modification/attacks that they could have made to the system so we can begin to fix them
 
 4) [2 Marks] List updates to policy below. 
 
-Updates to policy that we can make is that we can run John the ripper against the account stored in our system and make any users that have an account that has a password that is easily cracked (such as those that are cracked without John the ripper entering the incremental:ASCII stage, or are cracked < 1 hr in incremental:ASCII stage) to change their passwords to a more secure one. You should also make sure the server room is locked at all times and only authorized individuals are allowed access in. This will make it harder for an attacker to get physical acess to the hard drive. In order to aid in recovery, a policy should be inacted to ensure that tripwire is frequently and logs are constantly being monitored. Backups of the server should also be regularly stored in a seperate location from the system. This will aid in recovery as if there is a potential breach, it will be detected swiftly and hopefully before any catastrophic damage is done, and the system can be restored.
+Updates to policy that we can make is that we can run John the ripper against the account stored in our system and make any users that have an account
+that has a password that is easily cracked (such as those that are cracked without John the ripper entering the incremental:ASCII stage, or
+are cracked < 1 hr in incremental:ASCII stage) to change their passwords to a more secure one. You should also make sure the server room is locked at 
+all times and only authorized individuals are allowed access in. This will make it harder for an attacker to get physical acess to the hard drive.
+In order to aid in recovery, a policy should be inacted to ensure that tripwire is frequently and logs are constantly being monitored.
+Backups of the server should also be regularly stored in a seperate location from the system. 
+This will aid in recovery as if there is a potential breach, it will be detected swiftly
+and hopefully before any catastrophic damage is done, and the system can be restored.
 
 5) [2 Marks] Report on what the attacker could have done to leave fewer traces than they did in this attack. 
 	What would you do to detect a compromise even in this case? 
 
-	To leave fewer traces the hacker could have ran tripwire again to initialize a new directory after making his changes, or he also could have installed a modified version of tripwire, so when the sysadmin runs tripwire again there would not be reports of any tampering.
-In order to detect a compromise even in this case we should store the tripwire database of your untampered with system in a drive that is seperate from the system that we are trying to protect. Then for any checks we want to make, we install a clean version of tripwire (or you can also have an original tripwire application stored in the offline hard drive as well) and run the tripwire check using the database in the drive.
+	To leave fewer traces the hacker could have ran tripwire again to initialize a new directory after making his changes, or he also could have installed a 
+	modified version of tripwire, so when the sysadmin runs tripwire again there would not be reports of any tampering.
+
+	In order to detect a compromise even in this case we should store the tripwire database of your untampered with system in a drive that is seperate
+	from the system that we are trying to protect. Then for any checks we want to make, we install a clean version of tripwire 
+	(or you can also have an original tripwire application stored in the offline hard drive as well) and run the tripwire check
+	using the database in the drive.
 
