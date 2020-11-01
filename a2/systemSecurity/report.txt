@@ -60,11 +60,20 @@
   	Proceeding with wordlist:/usr/share/john/password.lst, rules:Wordlist
   	password         (arnold)
   	Proceeding with incremental:ASCII
+	
+	After waiting ~5 hours, we were able to crack 2 out of the 5 accounts.
+ 	We can use john shadow --show to see the results.
 
-		
+	john shadow --show
+	arnold:password:16861:0:99999:7:::
+	joe:joeeoj:16735:0:99999:7:::
 
-ARNOLD : Wait as long as you think is reasonable, then report your results, 
-         including which passwords were not broken and whether you feel that they are secure enough. Why do you believe they are secure?
+	2 password hashes cracked, 3 left
+
+	We can conclude that the other 3 accounts have relativly safe passwords,
+	as they weren't able to be cracked in single crack mode or wordlist mode,
+	and after a long time in brute force mode, John the Ripper still hasn't cracked
+	the passwords. 
 
 2c) [2 Marks] Modify user sid so that they are now a root user with password 'password'. 
 
