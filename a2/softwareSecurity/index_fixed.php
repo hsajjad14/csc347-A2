@@ -216,12 +216,27 @@ if ($check_token)
             ));
             if (!($row = pg_fetch_row($result)))
             {
+                $id = rand(0,10000000);
+                // check if id exists already (unlikely)
+                $stmtname="check_solution_id";
+                $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE id=$id");
+                $result = pg_execute($dbconn, $stmtname, array());
+                // keep making new id's until you make one that doesn't exist
+                $count=0;
+                while($row = pg_fetch_row($result)){
+                  $id = rand(0,10000000);
+                  $result = pg_prepare($dbconn, $stmtname . $count, "SELECT * FROM solution WHERE id=$id");
+                  $result = pg_execute($dbconn, $stmtname . $count, array());
+                  $count = $count + 1;
+                }
+                // generate new solution with a new id
                 $stmtname = "add_expression";
-                $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");
+                $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId, id) values ($1, $2, $3, $4)");
                 $result = pg_execute($dbconn, $stmtname, array(
                     $value,
                     $expression,
-                    $accountId
+                    $accountId,
+                    $id
                 ));
             }
             else

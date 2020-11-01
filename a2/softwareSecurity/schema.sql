@@ -11,7 +11,7 @@ create table account (
 );
 
 create table solution (
-        id serial primary key,
+        id integer primary key,
         value integer not null,
 	expression varchar(200) not null unique,
         accountId integer references account(id)
