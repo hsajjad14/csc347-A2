@@ -1,0 +1,168 @@
+<html>
+	<body>
+		<h1> # FIX OWASP A6: SENSITIVE DATA EXPOSURE </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+				<br><br>
+				This vulnerablity arises when sensitive data is not properly encrypted, allowing users to easily view/use this information once they get access to it. <br>
+				
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br><br>
+				This is how the postgreSQL database account table is constructed:<br><br>
+				<code>
+					create table account (<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;        id serial primary key,<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;      username varchar(50) UNIQUE,<br>
+					 &nbsp;&nbsp;&nbsp;&nbsp;       passwd varchar(50) NOT NULL,<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;      firstName varchar(50),<br>
+					   &nbsp;&nbsp;&nbsp;&nbsp;     lastName varchar(50)<br>
+					);<br>
+					<br><br>
+					INSERT INTO account(firstName, lastName, username, passwd) values('Alex','Large','bigBoy','sdfdsfd');<br>
+					INSERT INTO account(firstName, lastName, username, passwd) values('Anne','Lion','anne','lion');<br>
+					...
+				</code>
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br><br>
+				Using the unfixed index.php, if we run the sqlmap command:<br><br>
+				sqlmap -u "http://192.168.10.100/fourFours/index.php?operation=login&user=haider&password=something" -D public -T account -C id,firstname,lastname,passwd,username --dump
+				<br>
+				It will spit out the entire account table. Although this is a sql injection <br>
+				vulnerablity, this is also a sensitive data exposure, as the passwords are easily exposed <br>
+				using simple sql injections and an sql injection attack:<br><br>
+				+------+-----------+-------------+----------------+-----------------------+<br>
+				| id   | firstname | lastname    | passwd         | username              |<br>
+				+------+-----------+-------------+----------------+-----------------------+<br>
+				| 1    | Alex      | Large       | sdfdsfd        | bigBoy                |<br>
+				| 2    | Anne      | Lion        | lion           | anne                  |<br>
+				| 3    | Linda     | Swim        | fourfivesix    | lindah20              |<br>
+				| 4    | Abagail   | Silver      | silverisbetter | coins                 |<br>
+				| 5    | Jessie    | Burn        | password1      | matchstick            |<br>
+				| 6    | Annie     | Cup         | password       | coffee                |<br>
+				| 7    | Diane     | Bassell     | passw0rd       | ssll                  |<br>
+				| 8    | Steve     | Mountain    | cliff          | cliff                 |<br>
+				| 9    | Arnold    | Rosenbloom  | sdxfdsgger     | arnold@cs.toronto.edu |<br>
+				| 10   | Jay       | Perlmuter   | perl           | perl                  |<br>
+				| 11   | Peter     | Piper       | Peter          | pickApeck             |<br>
+				| 12   | Jen       | Binghampton | jbh            | hotel                 |<br>
+				| 13   | David     | Kleinman    | esrever        | dk@gmail.com          |<br>
+				| 14   | Jesse     | Kowalski    | badPassword    | eightball@gmail.com   |<br>
+				| 15   | Ivanna    | Grant       | grant          | ivanna                |<br>
+				+------+-----------+-------------+----------------+-----------------------+<br>
+
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br><br>
+				With this vulnerablity, the software violates Confidentiality.<br> This is because if there is a data breach, confidential information that is not encrypted could be easily viewed/used by the attacker.<br>
+				Integrity is also violated. If login information is leaked, an attacker can gain access to the system and change users data in the system. <br> Authentication is also violated as we can no longer ensure the data is genuine as an attacker could potentially modify data through logging in as a user.
+				<br> Accountability is also violated as if an attacker gains login information for users, they are able to impersonate them and we won't be able to hold the correct person accountable for their actions.<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+		<br>
+		<br>
+		Run: <br><br>
+		<code>
+		sqlmap -u "http://192.168.10.100/fourFours/index.php?operation=login&user=haider&password=something" -D public -T account -C id,firstname,lastname,passwd,username --dump
+	</code><br><br>
+		And view the table with all the passwords.
+
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													<br><br>
+													First we want to hash the passwords to encrypt them inside the databse.<br>
+													We do this by first generating a random 10 digit salt for each password <br>
+													and storing it in the database.<br><br>
+													Here is the <a href=A6.txt>file</a> with the php script to get the hashed passwords.
+													Then the algorithm to generate the password is:<br>
+													passwd = hash("sha256", hash("sha256", salt) + user_password)<br><br>
+													So whenever a user enters there password we run it through that algorithm<br>
+													and look for the genereated hash.	<br><br>
+													Look at this modified <a href=schema.sql>schema.sql</a> schema for the encrypted <br>
+													passwords. The code to create the hash in php and compare with the database is:<br><br>
+													<code>
+														# A6 fix, using hashing sha256<br>
+										        // get salt from database<br>
+										        $query = "SELECT salt from account where username=$1";<br>
+										        $stmtname = "get_salt";<br>
+										        $result = pg_prepare($dbconn, $stmtname, $query);<br>
+										        $result = pg_execute($dbconn, $stmtname, array(<br>
+										          &nbsp;&nbsp;&nbsp;&nbsp;   $user<br>
+										        ));<br>
+<br>
+										        // hash using hash( hash(salt) + password )<br>
+										        $username_found = False;<br>
+										        $hashed_password="";<br>
+										        if ($row = pg_fetch_row($result))<br>
+										        {<br>
+										         &nbsp;&nbsp;&nbsp;&nbsp;    $salt = $row[0];<br>
+										         &nbsp;&nbsp;&nbsp;&nbsp;    $username_found = True;<br>
+										        &nbsp;&nbsp;&nbsp;&nbsp;     $hashed_password = hash("sha256", hash("sha256", $salt) . $password);<br>
+										        }<br>
+<br>
+										        if ($username_found)<br>
+										        {<br>
+										        &nbsp;&nbsp;&nbsp;&nbsp;     # FIX OWASP 2013 A1: SQL Injection, use prepared statements<br>
+										         &nbsp;&nbsp;&nbsp;&nbsp;    $query = "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd='$hashed_password'";<br>
+														&nbsp;&nbsp;&nbsp;&nbsp; 		<br>....
+													</code>
+													<br><br>
+													In the code we first get the salt from the database for that user. <br>
+													If that user exists, we run our algorithm to get the hashed_password <br>
+													then just continue as before except in password field replace it with <br>
+													hashed_password.
+													<br><br>
+													If the data gets leaked again it becomes very difficult to crack the <br>
+													passwords as the attacker doesn't know the hashing algorithm used <br>
+													or the way the salt was combined. This is the leaked data but encrypted:
+													<br><br>
+													+------+-----------+-------------+------------------------------------------------------------------+------------+-----------------------+<br>
+													| id   | firstname | lastname    | passwd                                                           | salt       | username              |<br>
+													+------+-----------+-------------+------------------------------------------------------------------+------------+-----------------------+<br>
+													| 1    | Alex      | Large       | 3b9c2126a5f3215ddfd3b161eab25a6123474e92551ae5fccfa2ee9204e90817 | h6S6TV9ZQO | bigBoy                |<br>
+													| 2    | Anne      | Lion        | 515e2fa5c2f72841e182512fb478ee1a8bda82101a581d6071f8c08bded556a9 | qGgNELUsuR | anne                  |<br>
+													| 3    | Linda     | Swim        | 6dbb7841871b7bde916d1345b51d97bdf4f49ed02f827577ba2e2139bfd26b7f | TADfXcfLTA | lindah20              |<br>
+													| 4    | Abagail   | Silver      | 228c3d15af0dbb2a6d850e6517b3180c8ba52c5e3c7a21822a739e2ad3b7c903 | jDpXcl0NcM | coins                 |<br>
+													| 5    | Jessie    | Burn        | db536d4060562e628c2ab0998dd795a201fcbaa8c16d9b7ab841640a14e02726 | B9rPf8COA0 | matchstick            |<br>
+													| 6    | Annie     | Cup         | cd5eb0a20b0af30b2f3740bce277467eb366218e95672327453ec0e65f4070b1 | 6XS8yYPz6j | coffee                |<br>
+													| 7    | Diane     | Bassell     | 91ba019881f0c31cc456ced60ae4919e87b8919606914b992930aa82cd95a97b | cfGy4hdDid | ssll                  |<br>
+													| 8    | Steve     | Mountain    | 01b1dec23632c9ea7bd9d45882be9fc49aec125bb8323f6b3220c94b4716805a | L1mVlAMucY | cliff                 |<br>
+													| 9    | Arnold    | Rosenbloom  | 9db7541217ec6cc86bdd3ffa906b4cea3c709fdddd2ab0ab72c08227016aa0c2 | VrcSdKaWCl | arnold@cs.toronto.edu |<br>
+													| 10   | Jay       | Perlmuter   | 22f2ec05c3bfed8212c1303df70d92bb96f0d14dc7f98c9e2bae4050fd575b0e | z5f1HfTBv1 | perl                  |<br>
+													| 11   | Peter     | Piper       | 303bb13d6fa2ca6fa217b7be6912edf41911905edc1316c2a439e69f22d7b401 | mm3le524vf | pickApeck             |<br>
+													| 12   | Jen       | Binghampton | 14cfaf39b2defad4354b32520821b1685e2b194f88b922b628f1de8ebbbeca56 | BKy8F6cqxe | hotel                 |<br>
+													| 13   | David     | Kleinman    | 2056790772b710a894e3d396d71c270e240b3d47edc7e7039711db52c877e791 | rYQqsGjO0w | dk@gmail.com          |<br>
+													| 14   | Jesse     | Kowalski    | d3058165c9186658cc8c99bb664bf0a749b3edd2499968bf456ba4ecefe122ff | YGqbQB8VHs | eightball@gmail.com   |<br>
+													| 15   | Ivanna    | Grant       | d1cebe5afe1c24b3b1229ec4089f76755901250263d96554460cf58c9208fccd | UTw035yFQL | ivanna                |<br>
+													+------+-----------+-------------+------------------------------------------------------------------+------------+-----------------------+<br>
+
+
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+													<br><br>
+													Sensitive data that exists in the server should be given extra protection. <br>
+													By encrypting passwords in the database, the data is much more secure. <br> This way, if a potential data breach does occur, the passwords will still be protected by the encryption.<br> This will make it much more difficult for an attacker to gain acesss to this sensitive information as he must also crack the encryption, and without knowing the hashing algorithm and salt usage before hand, this is very difficult.<br> 
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

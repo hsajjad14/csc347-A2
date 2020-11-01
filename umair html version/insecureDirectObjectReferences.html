@@ -1,0 +1,130 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A4: INSECURE DIRECT OBJECT REFERENCES </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				An insecure direct object reference vulnerability occurs when sensitive information of an object <br>
+				(internal structure, file, url, etc.) is exposed without access control checks.
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:<br><br>
+				<code>
+					In the old schema.sql or ( <a href=og_schema.sql>old schema<a>) in the solution table, this<br>
+						is what causes the insecure direct object references, because serial just increments when a new entry is added: <br>
+						create table solution (<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	        id serial primary key,<br>
+					...<br><br>
+					In index.php when adding an expression we don't add it's id as postgreSQL takes care of that by just incrementing from the last id added: <br><br>
+					$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
+					$result = pg_execute($dbconn, "", array());<br>
+					if(!($row = pg_fetch_row($result))) {<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;		$result = pg_prepare($dbconn, "", "insert into solution (value, expression, accountId) values ($value, '$expression', $accountId)");<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;		$result = pg_execute($dbconn, "", array());<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;		...<br>
+				</code>
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br><br>
+				This information can be used by an attacker to manipulate reference to access and/or alter unauthorized data. <br>
+				To show an example, follow the following steps:<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - follow the commands to clear the database on the assignment site<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - login as perl, password = perl<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - add an expression, and logout.<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - login as cliff , password = cliff<br>
+				&nbsp;&nbsp;&nbsp;&nbsp; - in the url paste: http://192.168.10.100/fourFours/index.php?operation=deleteExpression&expressionId=1&accountId=10
+				<br>&nbsp;&nbsp;&nbsp;&nbsp; - This causes perl's expression to be deleted by cliff.<br>
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details<br><br>
+				This creates an Integrity issue as a user's information in storage got deleted by an attacker.<br>
+				Also it is an Authentication issue: The data is no longer genuine as an attacker can modify it<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+<xmp>
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													The fix we implemented with the tokens for A8 csrf already<br>
+													takes care of most of the issue as an attacker won't be able to guess
+													the right token when trying to delete another's expression. <br>
+													<br>
+													But if they do get past that just check if the expression <br>
+													being deleted belongs to the user who's deleting it. <br>
+													If not raise an error.
+													<br><br>
+													Here is code to check user id's before deleting:<br>
+													<code>
+														$stmtname = "delete_expression";<br>
+											      if ($accountId != $_SESSION['accountId']) {<br>
+											       &nbsp;&nbsp;&nbsp;&nbsp; $g_errors="ERROR: You cannot delete this Expression";<br>
+											      } else {<br>
+											      &nbsp;&nbsp;&nbsp;&nbsp;  $result = pg_prepare($dbconn, $stmtname, "DELETE FROM solution WHERE id=$1 AND accountId=$2");<br>
+											      &nbsp;&nbsp;&nbsp;&nbsp;  $result = pg_execute($dbconn, $stmtname, array(<br>
+											       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     $expressionId,<br>
+											    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;        $accountId<br>
+											     &nbsp;&nbsp;&nbsp;&nbsp;   ));<br>
+											      }<br>
+
+													<br><br>
+													Also some more changes to fix the direct object references is <br>
+													by changing how expression id's are generated. In the <a href=schema.sql>schema.sql<a> <br>
+													change the id to be this:<br><br>
+													create table solution (<br>
+													  &nbsp;&nbsp;&nbsp;&nbsp;      id integer primary key,<br>
+													&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;				...<br>
+																	<br><br>
+
+													Then when adding a new expression first generate a new id, and while that id exists keep generateing id's until we get one that doesn't exist in the table:<br><br>
+
+													$id = rand(0,10000000);<br>
+					                // check if id exists already (unlikely)<br>
+					                $stmtname="check_solution_id";<br>
+					                $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE id=$id");<br>
+					                $result = pg_execute($dbconn, $stmtname, array());<br>
+					                // keep making new id's until you make one that doesn't exist<br>
+					                $count=0;<br>
+					                while($row = pg_fetch_row($result)){<br>
+					              &nbsp;&nbsp;&nbsp;&nbsp;    $id = rand(0,10000000);<br>
+					           &nbsp;&nbsp;&nbsp;&nbsp;       $result = pg_prepare($dbconn, $stmtname . $count, "SELECT * FROM solution WHERE id=$id");<br>
+					           &nbsp;&nbsp;&nbsp;&nbsp;       $result = pg_execute($dbconn, $stmtname . $count, array());<br>
+					             &nbsp;&nbsp;&nbsp;&nbsp;     $count = $count + 1;<br>
+					                }<br>
+					                // generate new solution with a new id<br>
+					                $stmtname = "add_expression";<br>
+					                $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId, id) values ($1, $2, $3, $4)");<br>
+					                $result = pg_execute($dbconn, $stmtname, array(<br>
+					             &nbsp;&nbsp;&nbsp;&nbsp;       $value,<br>
+					             &nbsp;&nbsp;&nbsp;&nbsp;       $expression,<br>
+					             &nbsp;&nbsp;&nbsp;&nbsp;       $accountId,<br>
+					              &nbsp;&nbsp;&nbsp;&nbsp;      $id<br>
+					                ));<br>
+													</code>
+
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:<br><br>
+													The fix is checking the current user id (inside the session) <br>
+													Against who the expression belongs to. So another user can't <br>
+													delete anothers expression. Also it is now impossible for an attacker <br>
+													to guess another expressions id.
+
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

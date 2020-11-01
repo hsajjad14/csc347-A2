@@ -1,0 +1,155 @@
+<html>
+	<body>
+		<h1> # FIX OWASP A8: CSRF (Cross Site Request Forgery) </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				An attacker that can obtain a victim's cookies for a site is able to 
+				impersonate the victim and gain access to the site as the victim.
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+					<br><br>
+					Some examples of bad code which cause csrf attacks in index.php:
+<br><br>
+					<code>
+					if($operation == "login"){<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$user=$_REQUEST['user'];<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$password=$_REQUEST['password'];<br>
+						...<br>
+<br>
+					} elseif($operation == "deleteExpression"){<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$expressionId = $_REQUEST['expressionId'];<br>
+					&nbsp;&nbsp;&nbsp;&nbsp;	$accountId=$_REQUEST['accountId'];<br>
+						...<br>
+					$expression = $_REQUEST['expression'];<br>
+					$value=$_REQUEST['value'];<br>
+					$accountId=$_REQUEST['accountId'];<br>
+					...<br>
+					$operation=$_REQUEST['operation'];<br>
+					<br><br>
+					</code>
+					Basically almost everywhere where it is using $_REQUEST. Because the attacker can inject things into the url to get what they want<br> It is very predictable and easy.
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br><br>
+				An attacker can use netcat commands to send requests to the server <br>
+				pretending to be the victim's browser.<br><br>
+				So if the victim's cookie is 9dc405ff3e487754aaea8596e97bf3d4.
+				<br><br>
+				An attacker can do:<br>
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+				And it will get the request in <a href=netcat_useCookie_get_user_alex.txt>netcat_useCookie_get_user_alex.txt<a><br><br>
+				and in netcat_useCookie_get_user_alex.txt we can see that we are logged in as Alex.<br>
+					<br>
+				We can see one of his expressions and the url to delete it:<br>
+					    "?operation=deleteExpression&expressionId=34&accountId=1"<br>
+					<br><br>
+				So if we append this to the url in the netcat request it should delete that expression<br><br>
+
+				nc 192.168.10.100 80 > delete_Alex_expression.txt  2>&1<br>
+				GET /fourFours/index.php?operation=deleteExpression&expressionId=34&accountId=1 HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br>
+				<br><br>
+				And if we look at <a href=delete_Alex_expression.txt>delete_Alex_expression.txt<a> we can see that expression is gone.<br>
+
+				we can also reload the page just in case:<br><br>
+
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex2.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+
+				And we can see in <a href=netcat_useCookie_get_user_alex2.txt>netcat_useCookie_get_user_alex2.txt<a> that the expression is gone.<br>
+
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br><br>
+				Confidentiality issue: Attacker can see all of the victim's data.<br>
+				Integrity issue: Attacker can change or modify the data.<br>
+				Authentication issue: The data is no longer genuine as an attacker can modify it <br>
+				Accountability issue: Since the hacker is impersonating another user, we are not <br>able to hold the correct person accountable for their actions<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+		<br><br>
+		Run http://192.168.10.100/fourFours/index.php as a user. Then using it's cookies<br>
+		run netcat on kali, and follow the above commands. We can clearly use the user's <br>
+		cookie to login as them and do whatever we want.
+<xmp>
+</xmp>
+		<h2> The Fix </h2>
+		<ul>
+			<li> Explain the fix:
+				<br><br>
+				Use anti-CSRF tokens, provide the user browser with a piece of<br>
+				information (a token) and check if the web browser sends it back.<br>
+				 The token must be unique and impossible to guess by a third party.<br>
+				  The application must not proceed unless it verifies that piece of information.<br>
+					Send this token in the url so an attacker can't guess the url. <br>Also 
+					this prevents the user from doing repeat actions by refreshing.<br> For example, if they add a expression and refresh it won't attempt to add it again.
+<xmp>
+</xmp>
+			</li>
+			<li> How the fix resolves the issue:<br><br>
+
+				The code below first check's if there's a token in the url, then it compares <br>
+				it with the one in the session to make sure it's the right person and form. <br>
+				Then it assigns a new random token to the session. And anytime we login, logout, <br>
+				delete an expression, add an expression we add the token to the url. So it can <br>
+				be checked against the session token .
+				<br><br>
+				checking if token recieved in the url is the same as the one sent:<br><br>
+				<code>
+					$check_token = True;<br><br>
+					// check if post token is set, and token in cookie is set, if so, check if they are equal<br>
+					if (isset($_GET['token']) && !empty($_GET['token']) && isset($_SESSION['token']) && !empty($_SESSION['token']))<br>
+					{<br>
+					 &nbsp;&nbsp;&nbsp;&nbsp;   if ($_GET['token'] == $_SESSION['token'])<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;  {<br>
+					     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   $check_token = True;<br>
+					   &nbsp;&nbsp;&nbsp;&nbsp; }<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;  else<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;  {<br>
+					   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     $check_token = False;<br>
+					  &nbsp;&nbsp;&nbsp;&nbsp;  }<br>
+					}<br>
+<br>
+					// Set new token on new request<br>
+					$token = md5(uniqid(rand() , true));<br>
+					$_SESSION['token'] = $token;<br>
+<br>
+					// make url to be used in the form<br>
+					$url_with_token="http://192.168.10.100/fourFours/index.php?token=" . $token;<br><br>
+					Then in the html <\forms\> on login and addExpression do this:
+					<br>
+					< form method="post" action=" < ? = $url_with_token ? > " ><br><br>
+					So we can make sure the right form was filled out by the right person by checking
+					the token returned.<br><br>
+					And on the delete url do this:<br>
+					$deleteLink="< a href=\"?token=$token&operation=deleteExpression&expressionId=$expressionId&accountId=$g_accountId\">...<br>
+					<br>
+					Same thing when logging out:<br>
+					echo "< a href=?token=" . $token . "&operation=logout>Logout</ a>"; ? >
+					<br><br>
+					So by checking the returned token with the one in the session we can make sure
+					that the correct form was filled out and by the intended person.<br>
+					An attacker can not get past this as they will not be able to guess the randomly generated token.
+<br><br>
+
+				</code>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+	</body>
+</html>

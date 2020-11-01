@@ -1,0 +1,128 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A1: SQL Injection, use prepared statements </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:
+				<br>
+				<br>
+				This vulnerability arises when a user is able to provide a string that includes an SQL query that gets executed.
+
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br>
+				<br>
+				Some example code is: <br><br>
+				<code>
+				$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+				$result = pg_prepare($dbconn, "", $query);<br>
+				$result = pg_execute($dbconn, "", array());<br><br>
+				Another example is when adding an expression: <br>
+				$dbconn = pg_connect_db();<br>
+				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
+				$result = pg_execute($dbconn, "", array()); <br>
+			</code>
+			<br><br>
+			So in the code above we can see the parameters are directly getting passed into the <br>
+			query and nothing actually is being prepared.
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:
+				<br>
+				<br>
+				
+				Attackers are able to read/alter/delete information through the use of these injected SQL queries. <br>
+				They can also use tools such as sqlMap to get all the information in the database. <br><br>
+				
+				The attacker can exploit this using some sql injections
+				<a href=sql_injections_example.txt>sql_injections_example.txt</a>
+				<br>
+				<br>
+				They can also use sqlMap like in <a href=A1_sqlmap.txt>A1_sqlmap.txt</a>
+				
+				
+
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br>
+				<br>
+				Confidentiality is violated as the attacker is able to view everything from the database by using tools such as sqlMap, or through their own sql injections. <br>
+				Integrity and Authentication is also violated as an attacker is able to modify the databases and the data stored in them. <br>Attackers can also delete the entire database, bringing the entire system down, violating Availability.
+				
+				
+<xmp>
+</xmp>
+			</li>
+		</ul>
+
+		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+		These are some commands that show sql injection vulnerablity:<br><br>
+		- x' and passwd is null<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;- this returns: Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...ROM<br>
+    		&nbsp;&nbsp;&nbsp;&nbsp;  account WHERE username='x' and passwd is null;' AND pass... ^ in /var/www/fourFours/index.php on line 20
+		<br><br>
+		- x' and username is null;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;- Query failed: ERROR: syntax error at or near "' AND passwd='" LINE 1: ...M<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;	  account WHERE username='x' and username is null;' AND pass... ^ in /var/www/fourFours/index.php on line 20
+		<br>
+		<br>
+		More in here:
+			<a href=sql_injections_example.txt>sql_injections_example.txt</a>
+<xmp>
+</xmp>
+
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:
+													<br>
+													<br>
+													Use prepared statements so when queries are sent to the database it knows what are the parameters and what are executable queries.<br>
+													Using prepared statements removes the possibility of ambiguity in the input as the database recieves the paramaterized query in advance<br> and then waits to recieve the parameters. As a result, user input will always be parsed as a parameter, preventing SQL injections.<br><br>
+													So for this query that is sent when a user logs in: <br>
+													<code>
+													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+													$result = pg_prepare($dbconn, "", $query);<br>
+													$result = pg_execute($dbconn, "", array());<br><br>
+													It would instead be like: <br>
+													$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username=$1 AND passwd=$2";<br>
+													$stmtname="find_user";<br>
+													$result = pg_prepare($dbconn, $stmtname, $query);<br>
+													$result = pg_execute($dbconn, $stmtname, array($user, $password));<br>
+<br>
+													Here are some more places that would change :<br>
+<br>
+													$stmtname = "find_expression";<br>
+							            $result = pg_prepare($dbconn, $stmtname, "SELECT * FROM solution WHERE expression=$1");<br>
+							            $result = pg_execute($dbconn, $stmtname, array(<br>
+						    &nbsp;&nbsp;&nbsp;&nbsp;	                $expression<br>
+							            ));<br>
+
+													$stmtname = "add_expression";<br>
+					                $result = pg_prepare($dbconn, $stmtname, "INSERT into solution (value, expression, accountId) values ($1, $2, $3)");<br>
+					                $result = pg_execute($dbconn, $stmtname, array(<br>
+					    &nbsp;&nbsp;&nbsp;&nbsp;                    $value,<br>
+					       &nbsp;&nbsp;&nbsp;&nbsp;                 $expression,<br>
+					    &nbsp;&nbsp;&nbsp;&nbsp;                    $accountId<br>
+					                ));<br>
+												</code><br><br>
+												This is preparing the query to take in parameters, 
+												then passes the parameters in when executing, so postgreSQL knows these are <br>
+												parameters and not executable.
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:<br><br>
+													The parameters passed in at pg_execute() let's 
+													 psql know that these are parameters and not meant to be executed.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

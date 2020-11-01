@@ -1,0 +1,118 @@
+<html>
+	<body>
+		<h1> # FIX OWASP 2013 A2: SESSION FIXATION </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				This vulnerabilty arises when application functions related to authentication and session management are not
+				implemented correctly<br>and an attacker can get another users session.
+<xmp>
+</xmp>
+			</li>
+			<li> Example code etc.:
+				<br><br>
+				Using the same session after logging in logging out etc.<br>
+				Or in index.php generating a single session and using it over all instances <br>
+				including privilege change: <br><br>
+				<code>
+					session_start();
+				</code>
+<xmp>
+</xmp>
+			</li>
+			<li> How attacker exploits this:<br><br>
+			
+				If the attacker somehow gets your session, and you use that same session to login<br>
+				and the session contains sensitive information (login, password) the attacker <br>
+				now has access to your login and password and can use these.<br><br>
+
+				Say the attacker gets a user's session id somehow before the user logged in. <br>
+				Then after the user logs in the attacker can use the same session id to log in as the user. <br>
+				And can do whatever the please.
+				<br><br>
+				We can use the same attack as in csrf.html using netcat: <br><br>
+				So if the victim's cookie is 9dc405ff3e487754aaea8596e97bf3d4.
+				<br><br>
+				An attacker can do:<br>
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+				And it will get the request in <a href=netcat_useCookie_get_user_alex.txt>netcat_useCookie_get_user_alex.txt<a><br><br>
+				and in netcat_useCookie_get_user_alex.txt we can see that we are logged in as Alex.<br>
+					<br>
+				We can see one of his expressions and the url to delete it:<br>
+					    "?operation=deleteExpression&expressionId=34&accountId=1"<br>
+					<br><br>
+				So if we append this to the url in the netcat request it should delete that expression<br><br>
+
+				nc 192.168.10.100 80 > delete_Alex_expression.txt  2>&1<br>
+				GET /fourFours/index.php?operation=deleteExpression&expressionId=34&accountId=1 HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br>
+				<br><br>
+				And if we look at <a href=delete_Alex_expression.txt>delete_Alex_expression.txt<a> we can see that expression is gone.<br>
+
+				we can also reload the page just in case:<br><br>
+
+				nc 192.168.10.100 80 > netcat_useCookie_get_user_alex2.txt  2>&1<br>
+				GET /fourFours/index.php HTTP/1.0<br>
+				Cookie: PHPSESSID=9dc405ff3e487754aaea8596e97bf3d4;<br><br>
+
+				And we can see in <a href=netcat_useCookie_get_user_alex2.txt>netcat_useCookie_get_user_alex2.txt<a> that the expression is gone.<br><br>
+				
+				When functions related to authentication and session management are not implemented properly,<br> attackers are able to compromise passwords, keys, session tokens, or exploit other implementation flaws to assume other users’ identities.<br>
+
+<xmp>
+</xmp>
+			</li>
+			<li> Impact: CIAaa and some details
+				<br><br>
+				Confidentiality issue: Attacker can see all of the victim's data.<br>
+				Integrity issue: Attacker can change or modify the data.<br>
+				Authentication issue: The data is no longer genuine as an attacker can modify it<br>
+				Accountability issue: The correct person will not be held accountable as the hacker is impersonating another person<br>
+<xmp>
+</xmp>
+			</li>
+		</ul>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													Implement new session creation on login and logout and delete <br>
+													the previous session.<br>
+													When logging in: <br><br>
+													<code>
+													if ($operation == "login")<br>
+													{<br>
+										&nbsp;&nbsp;&nbsp;&nbsp;				...<br>
+											&nbsp;&nbsp;&nbsp;&nbsp;				session_regenerate_id(True);<br>
+													}<br>
+													...<br><br>
+													elseif ($operation == "logout")<br>
+													{<br>
+											&nbsp;&nbsp;&nbsp;&nbsp;				...<br>
+										&nbsp;&nbsp;&nbsp;&nbsp;					session_regenerate_id(True);<br>
+													}<br>
+													</code>
+													<br>
+													So session_regenerate_id(True); is deleting the current session <br>
+													from the server making a new one and copying over all the information <br>
+													from the old session into the new one.
+
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:<br><br>
+													If the attacker somehow get's a hold of your session, and you <br>
+													login they can't do anything with that old session as it has been <br>
+													deleted from the server and you are using a brand new session, which <br>
+													holds your data.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>

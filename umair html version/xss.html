@@ -1,0 +1,128 @@
+<html>
+	<body>
+		<h1> # FIX: XSS: user input/output is not vetted </h1>
+		<h2> The Vulnerability </h2>
+		<ul>
+			<li> Brief explanation:<br><br>
+				This vulnerability arises when input/output is not sanitized and attackers are able to send input that can be an attack vector, such as a script to exploit the interpreter in the browser to the system. <br>
+<xmp>
+</xmp>
+                        </li>
+			<li> Example code etc.:<br><br>
+				<code>
+					$user=$_REQUEST['user'];<br>
+					$password=$_REQUEST['password'];<br>
+					$dbconn = pg_connect_db();<br>
+				$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+				$result = pg_prepare($dbconn, "", $query);<br>
+				$result = pg_execute($dbconn, "", array());<br><br>
+				Another example is when adding an expression: <br>
+				$expression = $_REQUEST['expression'];<br>
+				$value=$_REQUEST['value'];<br>
+				$accountId=$_REQUEST['accountId'];<br>
+		<br>
+				$dbconn = pg_connect_db();<br>
+				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
+				$result = pg_execute($dbconn, "", array()); <br>
+			</code>
+<br><br>
+			So in here the direct input recieved from the user gets put into the queries.<br>
+			An < XMP> element prevents text from being interpreted as html or text so the <br>
+			compiler tries executing instead as it doesn't know better. <br>
+			This allows the attacker to sent scripts as input and these scripts will get executed.<br>
+			
+<xmp>
+</xmp>
+                        </li>
+			<li> How attacker exploits this:<br><br>
+			 They can send this script when adding a expression: <br>
+			"< /xmp >< table bgcolor=green width=100 height=100>< tr >< td >Hi!!</ td ></ tr ></ table >< xmp >"
+				<br><br>
+				The script above although just makes a green box, when sent as an expression, it gets <br>
+				logged in the database and renders the application useless. No one else can enter or <br>
+				delete any more expressions.
+<xmp>
+</xmp>
+                        </li>
+			<li> Impact: CIAaa and some details<br><br>
+				This can be an Availability issue, as some scripts can render an entire webpage useless, so no other user can use it. <br>It can also be a Accountability, Confidentiality, and Integrity issue, as an attacker can enter certain scripts which can get user's cookies. <br> The attacker can then impersonate other users, view sensitive data about the user, and also modify their data
+<xmp>
+</xmp>
+                        </li>
+		</ul>
+
+<xmp>
+</xmp>
+               <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+							 enter: <br>
+							 "< /xmp >< table bgcolor=green width=100 height=100>< tr >< td >Hi!!</ td ></ tr ></ table >< xmp >"<br>
+							 In the login page
+<xmp>
+</xmp>
+                <h2> The Fix </h2>
+                <ul>
+                        <li> Explain the fix:<br><br>
+													Sanitize the input and output.<br>
+													Whenever someone sends us data, first limit the input/output sizes, so attackers
+													can't manipulate the look of the site using large inputs. <br>
+													Next, run input through a regex sanitzer and replace any special characters
+													with an empty space.<br> For add expression, if there are any characters that 
+													don't belong to the expression language, show an error. <br><br>
+													<code>
+														function sanitize_input($string, $isUserNameOrPassword)<br>
+														{<br>
+														&nbsp;&nbsp;&nbsp;&nbsp;    // maximum input length of 25 characters for username/password and 100 for expressions<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;  if ($isUserNameOrPassword)<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;  {<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;  $get_substring = substr($string, 0, 25);<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $pattern = "/<|>|{|}|&|\/|\\\|\\$/";<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $replacement = "";<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $cleaned_string = preg_replace($pattern, $replacement, $get_substring);<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   return $cleaned_string;<br>
+														&nbsp;&nbsp;&nbsp;&nbsp;    }<br>
+														 &nbsp;&nbsp;&nbsp;&nbsp;   else<br>
+														 &nbsp;&nbsp;&nbsp;&nbsp;   {<br>
+														 &nbsp;&nbsp;&nbsp;&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;   $get_substring = substr($string, 0, 100);<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $pattern = "/((sqrt)*[\^+*4\-()\/]+)+$/";<br>
+														   &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;  return preg_match($pattern, $get_substring);<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;  }<br>
+														}<br>
+<br>
+														Also Whenever we get user input from login/password or expression fields call the above method.
+														<br>
+														For expression field it will return 1 if it's ok to use 0 otherwise. Also use the sanitize_input <br>
+														function when getting data from $_GET, so the url, since an attacker can manipulate that.
+
+														<br><br>
+														Call sanitize_input() whenever we get untrusted information, so in:<br><br>
+														$operation = sanitize_input($_REQUEST['operation'], True);<br>
+														...<br>
+														$user = sanitize_input($_POST['user'], True);<br>
+														$password = sanitize_input($_POST['password'], True);<br>
+<br>
+														...<br>
+														$expressionId = sanitize_input($_REQUEST['expressionId'], True);<br>
+										        $accountId = sanitize_input($_REQUEST['accountId'], True);<br>
+														...<br>
+														$expression = "";<br>
+														$valid_expression = True;<br>
+														if (sanitize_input($_POST['expression'], False))<br>
+														{<br>
+<br>
+											&nbsp;&nbsp;&nbsp;&nbsp;					// max length it can be is 200 so we don't mess up the ui for other users<br>
+										&nbsp;&nbsp;&nbsp;&nbsp;						$expression = substr($_POST['expression'], 0, 200);<br>
+														}<br>
+														</code>
+<xmp>
+</xmp>
+                        </li>
+                        <li> How the fix resolves the issue:
+													<br><br>
+													The fix makes sure the browser's compiler doesn't confuse user input as code by replacing special characters.
+<xmp>
+</xmp>
+                        </li>
+                </ul>
+
+	</body>
+</html>
