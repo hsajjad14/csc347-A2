@@ -10,7 +10,27 @@
 <xmp>
 </xmp>
                         </li>
-			<li> Example code etc.:
+			<li> Example code etc.:<br><br>
+				<code>
+					$user=$_REQUEST['user'];<br>
+					$password=$_REQUEST['password'];<br>
+					$dbconn = pg_connect_db();<br>
+				$query= "SELECT id, username, firstName, lastName, passwd FROM account WHERE username='$user' AND passwd='$password'";<br>
+				$result = pg_prepare($dbconn, "", $query);<br>
+				$result = pg_execute($dbconn, "", array());<br><br>
+				Another example is when adding an expression: <br>
+				$expression = $_REQUEST['expression'];<br>
+				$value=$_REQUEST['value'];<br>
+				$accountId=$_REQUEST['accountId'];<br>
+		<br>
+				$dbconn = pg_connect_db();<br>
+				$result = pg_prepare($dbconn, "", "SELECT * FROM solution WHERE expression='$expression'");<br>
+				$result = pg_execute($dbconn, "", array()); <br>
+			</code>
+<br><br>
+			So in here the direct input recieved from the user get's put into the querries.<br>
+			An < XMP> element prevents text from being interpreted as html or text so the <br>
+			compiler tries executing it as it doesn't know better. And scripts can be passed throuhg.<br>
 <xmp>
 </xmp>
                         </li>
@@ -24,16 +44,22 @@
 <xmp>
 </xmp>
                         </li>
-			<li> Impact: CIAaa and some details
+			<li> Impact: CIAaa and some details<br><br>
+				This can be a Availability issue, as some scripts can render the entire <br>
+				add expression page useless, so no other user can use it. It can also be an <br>
+				Integrity and Confidentiality issue, as an attacker can enter certain scripts <br>
+				which get user's cookie, then they can act as the user and login and view and change there data.
 <xmp>
 </xmp>
                         </li>
 		</ul>
 
-		<h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
 <xmp>
 </xmp>
                <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+							 enter: <br>
+							 "< /xmp >< table bgcolor=green width=100 height=100>< tr >< td >Hi!!</ td ></ tr ></ table >< xmp >"<br>
+							 In the login page
 <xmp>
 </xmp>
                 <h2> The Fix </h2>
@@ -52,7 +78,7 @@
 														  &nbsp;&nbsp;&nbsp;&nbsp;  if ($isUserNameOrPassword)<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;  {<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;  $get_substring = substr($string, 0, 25);<br>
-														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $pattern = "/<|>|{|}|&|^|`|~|\/|\\\|\s/";<br>
+														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $pattern = "/<|>|{|}|&|\/|\\\|\\$/";<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $replacement = "";<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   $cleaned_string = preg_replace($pattern, $replacement, $get_substring);<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;   return $cleaned_string;<br>
@@ -64,11 +90,32 @@
 														   &nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;  return preg_match($pattern, $get_substring);<br>
 														  &nbsp;&nbsp;&nbsp;&nbsp;  }<br>
 														}<br>
-<br></code>
+<br>
 														Also Whenever we get user input from login/password or expression fields call the above method.
 														<br>
 														For expression field it will return 1 if it's ok to use 0 otherwise. Also use the sanitize_input <br>
 														function when getting data from $_GET, so the url, since an attacker can manipulate that.
+
+														<br><br>
+														Call sanitize_input() whenever we get untrusted information, so in:<br><br>
+														$operation = sanitize_input($_REQUEST['operation'], True);<br>
+														...<br>
+														$user = sanitize_input($_POST['user'], True);<br>
+														$password = sanitize_input($_POST['password'], True);<br>
+<br>
+														...<br>
+														$expressionId = sanitize_input($_REQUEST['expressionId'], True);<br>
+										        $accountId = sanitize_input($_REQUEST['accountId'], True);<br>
+														...<br>
+														$expression = "";<br>
+														$valid_expression = True;<br>
+														if (sanitize_input($_POST['expression'], False))<br>
+														{<br>
+<br>
+											&nbsp;&nbsp;&nbsp;&nbsp;					// max length it can be is 200 so we don't mess up the ui for other users<br>
+										&nbsp;&nbsp;&nbsp;&nbsp;						$expression = substr($_POST['expression'], 0, 200);<br>
+														}<br>
+														</code>
 <xmp>
 </xmp>
                         </li>
