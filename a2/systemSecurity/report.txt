@@ -125,7 +125,7 @@
 	
 		This command shows you login records of the system. We can see all the users
 		that logged in and out along with the date and time. We can also see when the 
-		system reboots. From this	we see that after arnold last logged off,
+		system reboots. From this we see that after arnold last logged off,
 		there was a system reboot, and then sid had logged in to the system.
 		Since the tripwire report shows us that our system has been altered, this 
 		command shows us that sid is a likely suspect and/or the system was altered 
@@ -136,7 +136,7 @@
 		WHAT DID YOU LEARN
 		
 		Some information that we can get from this command is that we can see how 
-		long the system has been running and also	how many users are currently 
+		long the system has been running and also how many users are currently 
 		logged on to the system. From this we see that while there is only 1 user
 		currently logged on, we can see that the system has a very short
 		uptime, meaning it was previously shutdown and rebooted recently. This is an
@@ -150,8 +150,8 @@
 		
  		A file we can look at is auth.log which shows the authentication logs of the
 		system. From this we can see that a session opened for user sid by LOGIN(uid = 0)
-		and there was a ROOT LOGIN and then the session closed. From this learned that 
-		sid is able to login as root user on the system.
+		and there was a ROOT LOGIN and then the session closed. From this we learned that 
+		sid was able to log in as a root user on the system.
 
 	.bash_history # what is this, whos should you look at and why are you looking?
 
@@ -185,12 +185,12 @@
 	authorized individuals are allowed access in. This will make it harder for an
 	attacker to get physical access to the hard drive. The hard drives should also
 	be encrypted so if the hacker does get physical access to the drive,
-	they will not be easily able to view the information as the must crack the
+	they will not be easily able to view the information as they must crack the
 	encryption first.
 	
 	Tripwire should be frequently ran, and logs should also be constantly 
 	monitored in order to detect any suspicious activity early on and stop attacks
-	before substantial damage is done. Program such as Logwatch should be used to
+	before substantial damage is done. Programs such as Logwatch should be used to
 	aid in analyzing the logs.
 	
 	Backups should also be made frequently and stored in a separate location from the
