@@ -175,14 +175,27 @@
 
 4) [2 Marks] List updates to policy below. 
 
-Updates to policy that we can make is that we can run John the ripper against the account stored in our system and make any users that have an account
-that has a password that is easily cracked (such as those that are cracked without John the ripper entering the incremental:ASCII stage, or
-are cracked < 1 hr in incremental:ASCII stage) to change their passwords to a more secure one. You should also make sure the server room is locked at 
-all times and only authorized individuals are allowed access in. This will make it harder for an attacker to get physical acess to the hard drive.
-In order to aid in recovery, a policy should be inacted to ensure that tripwire is frequently and logs are constantly being monitored.
-Backups of the server should also be regularly stored in a seperate location from the system. 
-This will aid in recovery as if there is a potential breach, it will be detected swiftly
-and hopefully before any catastrophic damage is done, and the system can be restored.
+	Updates to policy that we can make is that we can run John the Ripper against
+	the accounts in our system and require any users with passwords that are easily
+	cracked (such as passwords that are able to be cracked in single crack
+	or wordlist mode) to change them, and also require passwords to be changed
+	regularly.
+	
+	We should also ensure that the server room is locked at all times and only
+	authorized individuals are allowed access in. This will make it harder for an
+	attacker to get physical access to the hard drive. The hard drives should also
+	be encrypted so if the hacker does get physical access to the drive,
+	they will not be easily able to view the information as the must crack the
+	encryption first.
+	
+	Tripwire should be frequently ran, and logs should also be constantly 
+	monitored in order to detect any suspicious activity early on and stop attacks
+	before substantial damage is done. Program such as Logwatch should be used to
+	aid in analyzing the logs.
+	
+	Backups should also be made frequently and stored in a separate location from the
+	system. This will aid in recovery as if an attack occurs and there is damage
+	to the system, it can recovered by reverting back to one of the backups.
 
 5) [2 Marks] Report on what the attacker could have done to leave fewer traces than they did in this attack. 
 	What would you do to detect a compromise even in this case? 
