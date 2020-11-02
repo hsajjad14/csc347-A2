@@ -115,26 +115,56 @@
 	last # this is a command
 
 		WHAT DID YOU LEARN
-		
-		This shows a log of who logged in the system and what date and time. We can see that sid logged in before we logged in.
+	
+		This command shows you login records of the system. We can see all the users
+		that logged in and out along with the date and time. We can also see when the 
+		system reboots. From this	we see that after arnold last logged off,
+		there was a system reboot, and then sid had logged in to the system.
+		Since the tripwire report shows us that our system has been altered, this 
+		command shows us that sid is a likely suspect and/or the system was altered 
+		when it was shut down.
+		 
 	uptime # this is a command
 
 		WHAT DID YOU LEARN
-	This shows us how many users are logged in to the server, as well as how long the server has been online
+		
+		Some information that we can get from this command is that we can see how 
+		long the system has been running and also	how many users are currently 
+		logged on to the system. From this we see that while there is only 1 user
+		currently logged on, we can see that the system has a very short
+		uptime, meaning it was previously shutdown and rebooted recently. This is an
+		unexpected reboot as this shutdown was not done by us, so it shows
+		evidence of a potential attack where an attacker could have powered off the 
+		system to modify it.
 
 	/var/log/* # these are log files
 
 		WHAT DID YOU LEARN
-	Here there are lots of log files you can go through. For example looking at auth.log we see who logged in and when they logged out.
+		
+ 		A file we can look at is auth.log which shows the authentication logs of the
+		system. From this we can see that a session opened for user sid by LOGIN(uid = 0)
+		and there was a ROOT LOGIN and then the session closed. From this learned that 
+		sid is able to login as root user on the system.
 
 	.bash_history # what is this, whos should you look at and why are you looking?
 
 		WHAT DID YOU LEARN
-		- This shows us the a history of commands that were run from this account. 
-		In general after we get a suspicious tripwire report we should examine all the accounts that logged in between the last report and the new suspicous report.
-		We should look at sids bash history as we suspect that this account has been compromised. 
-		We are looking to determine exactly what the user has done on the system and look for any
-		sort of modification/attacks that they could have made to the system so we can begin to fix them
+		
+		This file a history of commands that have been executed by the user.
+		This is useful as you can see what they have done on the system. 
+		From this you can determine whether there is evidence of a potential attack
+		and can begin to fix it. A good idea is after we get a suspicious tripwire 
+		report we should examine all accounts that logged in between the last report
+	        and the new suspicious report to view if any of these users have been
+		compromised and a potential attack is being performed through these users.
+
+		Since sid is the user that logged in between scans, we will look at this users
+	        .bash_history file. From this file we see that this user did touch /bin/cat
+		and touch /bin/ps before logging out. This explains the modifications that we
+		see in the tripwire report, and while there doesn't appear to be any malicious
+		modifications, we can clearly see that sid is a root user when they should not be.
+
+
 
 4) [2 Marks] List updates to policy below. 
 
