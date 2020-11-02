@@ -187,11 +187,31 @@ and hopefully before any catastrophic damage is done, and the system can be rest
 5) [2 Marks] Report on what the attacker could have done to leave fewer traces than they did in this attack. 
 	What would you do to detect a compromise even in this case? 
 
-	To leave fewer traces the hacker could have ran tripwire again to initialize a new directory after making his changes, or he also could have installed a 
-	modified version of tripwire, so when the sysadmin runs tripwire again there would not be reports of any tampering.
+	One way the hacker could leave fewer traces is that they could modify the
+	tripwire program. Since the system is compromised, if tripwire is stored
+	on the system the hacker can manipulate the tripwire program as well, so the
+	hacker could be able to change the database. This way when the sysadmin runs
+	tripwire again, there will not be reports of any tampering.
 
-	In order to detect a compromise even in this case we should store the tripwire database of your untampered with system in a drive that is seperate
-	from the system that we are trying to protect. Then for any checks we want to make, we install a clean version of tripwire 
-	(or you can also have an original tripwire application stored in the offline hard drive as well) and run the tripwire check
-	using the database in the drive.
+	In order to detect a compromise in this case we should store the tripwire
+	database somewhere offline and off of the system we are trying to protect,
+	such as in a USB drive. Then for any checks we want to make, on a separate, secure
+	operating system, we mount the drive of the system that we are trying to run the
+	check on, and install a clean version of tripwire (or you can also have an 
+	original tripwire application stored in the offline drive as well). We then
+	run the tripwire check on the system's drive, using the database we stored in
+	the USB.
+
+	Another way the hacker can leave fewer traces is by clearing the .bash_history
+	after they have made their modifications. They could do this by using commands
+	such as cat /dev/null > ~/.bash_history in all the terminals. This will leave
+	behind fewer traces as there will no longer be a record of the commands that
+	the hacker done.
+
+	To detect a compromise in this case, the defender should use the cleared
+	.bash_history log as an indicator that an attack might have occurred and begin
+	carrying out recovery measures (such as backing up the system,etc). This is because
+	a cleared .bash_history shows that a hacker might have carried out an attack
+	and has taken the steps to hide their tracks.
+
 
