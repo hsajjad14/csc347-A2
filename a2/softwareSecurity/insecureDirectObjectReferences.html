@@ -51,6 +51,12 @@
 <xmp>
 </xmp>
                <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+Login as a user (user: cliff, password: cliff) and add an expression. <br>
+Hover over the delete button for that expression and view the expressionId. <br>
+Then Login as another user (user: perl, password: perl) or cliff again and add another expression.<br>
+View this new expression's expressionId and notice how it just incremented the last expressionId by one. <br>
+So we can refernce different expressions that don't belong to us because the expressionId generation is very predictable. 
+
 <xmp>
 </xmp>
                 <h2> The Fix </h2>

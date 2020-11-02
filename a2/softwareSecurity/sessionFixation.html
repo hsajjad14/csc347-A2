@@ -75,6 +75,11 @@
 			</li>
 		</ul>
                <h2> INSTRUCTIONS TO VERIFY VULNERABILITY BELOW </h2>
+							 Run http://192.168.10.100/fourFours/index.php as a user. <br>
+							 Then using it's cookies
+							 run netcat on kali, and follow the above commands. <br>We can clearly use the user's
+							 cookie to login as them and do whatever we want.
+
 <xmp>
 </xmp>
                 <h2> The Fix </h2>
@@ -93,13 +98,18 @@
 													elseif ($operation == "logout")<br>
 													{<br>
 											&nbsp;&nbsp;&nbsp;&nbsp;				...<br>
-										&nbsp;&nbsp;&nbsp;&nbsp;					session_regenerate_id(True);<br>
+										&nbsp;&nbsp;&nbsp;&nbsp;					session_destroy();<br>
 													}<br>
 													</code>
 													<br>
 													So session_regenerate_id(True); is deleting the current session <br>
 													from the server making a new one and copying over all the information <br>
 													from the old session into the new one.
+													<br><br>
+													On logout I decided to delete the session entirely as there is no need <br>
+													to keep. This is because, for any user that logs in, they still need to <br>
+													input there username/password, so holding onto information of the previous user <br>
+													serves no purpose.
 
 <xmp>
 </xmp>
