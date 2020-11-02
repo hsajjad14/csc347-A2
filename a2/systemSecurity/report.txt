@@ -108,8 +108,15 @@
 2d) NOTHING TO REPORT HERE
 
 3a) [2 Marks] Place the result of running tripwire in twreport2.txt. 
-	Identify anything interesting below.
-	- In the tripwire report we can see that modification have been made to several files. We can see specifically /etc/passwd and /etc/shadow has been modified 
+	Identify anything interesting below.	
+	
+	From the results of the tripwire report we see clear evidence that our system
+	has been modified as this report found 8266 total violations.
+	Some important changes we see is that the /etc directory has been modified.
+	/etc/passwd and /etc/shadow have both been modified. We can also see that
+	in the /bin directory, /bin/cat and /bin/ps have been modified.
+	We do not expect these files to have been modified between the two
+	tripwire scans, so this indicates that there has been an attack. 
 
 3b) [4 Marks] 
 	last # this is a command
